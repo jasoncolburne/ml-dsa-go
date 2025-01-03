@@ -9,7 +9,9 @@ import (
 )
 
 func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLength, sigLength int) {
-	vk, sk, err := mldsa.KeyGen(params)
+	dsa := mldsa.Init(params)
+
+	vk, sk, err := dsa.KeyGen()
 	if err != nil {
 		t.Fatalf("error generating keypair: %v", err)
 	}
@@ -59,7 +61,7 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 
 	message, _ := hex.DecodeString("89b0c4b23019af3498a27da290892d981dd59fa08993bc05da21e1d72503664c98cadefc061d176d0b44bcab049bb540e0680a58bdad0d16316f772d44d47281")
 	ctx, _ := hex.DecodeString("09764e76473cc969442691dd0574afdd")
-	sig, err := mldsa.Sign(params, sk, message, ctx)
+	sig, err := dsa.Sign(sk, message, ctx)
 	if err != nil {
 		t.Fatalf("error signing: %v", err)
 	}
@@ -83,7 +85,7 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 	// 	t.Fatalf("bad sig")
 	// }
 
-	valid, err := mldsa.Verify(params, vk, message, sig, ctx)
+	valid, err := dsa.Verify(vk, message, sig, ctx)
 	if err != nil {
 		t.Fatalf("error verifying: %v", err)
 	}
@@ -93,7 +95,7 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 	}
 
 	sigPrime := copyAndMutate(sig)
-	valid, err = mldsa.Verify(params, vk, message, sigPrime, ctx)
+	valid, err = dsa.Verify(vk, message, sigPrime, ctx)
 	if err != nil {
 		t.Fatalf("error verifying: %v", err)
 	}
@@ -103,7 +105,7 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 	}
 
 	messagePrime := copyAndMutate(message)
-	valid, err = mldsa.Verify(params, vk, messagePrime, sig, ctx)
+	valid, err = dsa.Verify(vk, messagePrime, sig, ctx)
 	if err != nil {
 		t.Fatalf("error verifying: %v", err)
 	}
@@ -113,7 +115,7 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 	}
 
 	ctxPrime := copyAndMutate(ctx)
-	valid, err = mldsa.Verify(params, vk, message, sig, ctxPrime)
+	valid, err = dsa.Verify(vk, message, sig, ctxPrime)
 	if err != nil {
 		t.Fatalf("error verifying: %v", err)
 	}
