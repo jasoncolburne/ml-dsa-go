@@ -109,14 +109,7 @@ func pkEncode(parameters ParameterSet, rho []byte, t [][]int) []byte {
 	copy(pk, rho)
 
 	for i := range parameters.K {
-		// fmt.Printf("i: %d, t[i]: %v\n", i, t[i])
-		// if i == 15 {
-		// 	bytes, _ := hex.DecodeString("6d3bdd99d55d80e17d21163b61406ad4eaa70927e4fa74add922624d964725f11c9b7b52a5f9e3a6ec36e1f17d0ea61baf68ed8c04851a1a82730d39da1ad2e69e38288f55c13f75fc65dec5af6634ade84ee77459453a126f5a5902a806903c7914fbfb25515be9e57aebb8ca258d281e1a06109d85ea687de74a40f14235bd4d7541c05096800c47ad4d7f1554817c962d23840050c3f1c12966e586bcb6e71659168d96e6610ca391970581979aa40e6247b5c1661042468fa50e20e0435c7e7159b12fb3ec2d06dba6aa40030531f48071f645f7838d9faef5ed83ec5676cd4f5aa25e095cecceabc2df851488a5188ef9ef47b75ea42795d73b63800796331688fbf6e0c2fc0a6193c729209e013af51d52d1805b5ef72dda8e7827d38d92a70c4e09f6b0223dbc3e55c15ddb6aa5650d62078cfb6fe30668dd0c283ff3")
-		// 	fmt.Printf("unpacked[1]: %v\n", simpleBitUnpack(bytes, (1<<width)-1))
-		// 	pk = append(pk, bytes...)
-		// } else {
 		pk = append(pk, simpleBitPack(t[i], (1<<width)-1)...)
-		// }
 	}
 
 	return pk
@@ -228,8 +221,6 @@ func sigEncode(parameters ParameterSet, cTilde []byte, z [][]int, h [][]bool) []
 		sigma = append(sigma, bitPack(z[i], gamma1-1, gamma1)...)
 	}
 	hints := hintBitPack(parameters, h)
-	// fmt.Printf("hints: %v\n", h)
-	// fmt.Printf("packed hints: %v\n", hints)
 	sigma = append(sigma, hints...)
 
 	return sigma
@@ -320,6 +311,7 @@ func hintBitPack(parameters ParameterSet, h [][]bool) []byte {
 
 	for i := range parameters.K {
 		count := 0
+
 		for j := range 256 {
 			if h[i][j] {
 				count += 1
@@ -327,12 +319,10 @@ func hintBitPack(parameters ParameterSet, h [][]bool) []byte {
 				index += 1
 			}
 		}
-		// fmt.Printf("%d\n", count)
+
 		y[parameters.Omega+i] = byte(index)
 	}
 
-	// fmt.Printf("h: %v\n", h)
-	// fmt.Printf("%d\n", len(y))
 	return y
 }
 
@@ -369,6 +359,5 @@ func hintBitUnpack(parameters ParameterSet, y []byte) [][]bool {
 		}
 	}
 
-	// fmt.Printf("h: %v\n", h)
 	return h
 }

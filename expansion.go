@@ -19,7 +19,6 @@ func expandA(parameters ParameterSet, rho []byte) [][][]int {
 		for s := range parameters.L {
 			rhoPrime[rhoLength] = integerToBytes(s, 1)[0]
 			rhoPrime[rhoLength+1] = integerToBytes(r, 1)[0]
-			// fmt.Printf("rhoPrime: %v\n", rhoPrime)
 
 			A[r][s] = rejNttPoly(parameters, rhoPrime)
 		}

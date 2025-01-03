@@ -71,17 +71,13 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 	kappa := inputHash[96:]
 
 	AHat := expandA(parameters, rho)
-	// fmt.Printf("AHat: %v\n", AHat)
 	s1, s2 := expandS(parameters, rhoPrime)
-	// fmt.Printf("s1: %v\n", s1)
-	// fmt.Printf("s2: %v\n", s2)
 	s1Hat := vectorNtt(parameters, s1)
 
 	product := matrixVectorNtt(parameters, AHat, s1Hat)
 
 	t := make([][]int, parameters.K)
 	for j := range parameters.K {
-		// fmt.Printf("product[%d]: %v\n", j, product[j])
 		t[j] = addPolynomials(nttInverse(parameters, product[j]), s2[j])
 	}
 
@@ -96,8 +92,6 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 	}
 
 	pk := pkEncode(parameters, rho, t1)
-	// fmt.Printf("rho: %v\n", rho)
-	// fmt.Printf("t1: %v\n", t1)
 
 	tr := make([]byte, 64)
 	sha3.ShakeSum256(tr, pk)
@@ -156,13 +150,11 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		inputHash = make([]byte, 64)
 		copy(inputHash, mu)
 		inputHash = append(inputHash, w1Encode(parameters, w1)...)
-		// fmt.Printf("w1: %v\n", w1)
 
 		cTilde = make([]byte, parameters.Lambda/4)
 		sha3.ShakeSum256(cTilde, inputHash)
 
 		c := sampleInBall(parameters, cTilde)
-		// fmt.Printf("c: %v\n", c)
 		cHat := ntt(parameters, c)
 
 		cs1 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, s1Hat))
@@ -174,10 +166,6 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		}
 
 		z = vectorAddPolynomials(y, cs1)
-		// fmt.Printf("z: %v\n", z)
-		// fmt.Printf("y: %v\n", y)
-		// fmt.Printf("c: %v\n", c)
-		// fmt.Printf("cs1: %v\n", cs1)
 		r := vectorSubtractPolynomials(w, cs2)
 
 		r0Max := 0
@@ -210,7 +198,6 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		}
 
 		if zMax >= parameters.Gamma1-parameters.Beta || r0Max >= parameters.Gamma2-parameters.Beta {
-			// fmt.Printf("%d:%d %d:%d\n", zMax, parameters.Gamma1-parameters.Beta, r0Max, parameters.Gamma2-parameters.Beta)
 			z = nil
 			h = nil
 		} else {
@@ -246,7 +233,6 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 			}
 
 			if ct0Max >= parameters.Gamma2 || onesInH > parameters.Omega {
-				// fmt.Printf("%d:%d %d:%d\n", ct0Max, parameters.Gamma2, onesInH, parameters.Omega)
 				z = nil
 				h = nil
 			}
@@ -265,21 +251,12 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 	}
 
 	sigma := sigEncode(parameters, cTilde, zModQCentered, h)
-	// fmt.Printf("cTilde: %v\n", cTilde)
-	// fmt.Printf("zModQCentered: %v\n", zModQCentered)
-	// fmt.Printf("h: %v\n", h)
-
 	return sigma
 }
 
 func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	rho, t1 := pkDecode(parameters, pk)
-	// fmt.Printf("t1: %v\n", t1)
-	// fmt.Printf("rho: %v\n", rho)
 	cTilde, z, h := sigDecode(parameters, sigma)
-	// fmt.Printf("cTilde: %v\n", cTilde)
-	// fmt.Printf("z: %v\n", z)
-	// fmt.Printf("h: %v\n", h)
 
 	if h == nil {
 		return false
@@ -298,7 +275,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 
 	c := sampleInBall(parameters, cTilde)
 	cHat := ntt(parameters, c)
-	// fmt.Printf("c: %v\n", c)
 
 	ct := scalarVectorNtt(parameters, cHat, vectorNtt(parameters, scalarVectorMultiply(1<<parameters.D, t1)))
 	Az := matrixVectorNtt(parameters, AHat, vectorNtt(parameters, z))
@@ -308,7 +284,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	for i, value := range Azct {
 		wApproxPrime[i] = nttInverse(parameters, value)
 	}
-	// fmt.Printf("wApproxPrime: %v\n", wApproxPrime)
 
 	w1Prime := make([][]int, parameters.K)
 	for i, row := range wApproxPrime {
@@ -321,7 +296,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	inputHash = make([]byte, 64)
 	copy(inputHash, mu)
 	inputHash = append(inputHash, w1Encode(parameters, w1Prime)...)
-	// fmt.Printf("w1Prime: %v\n", w1Prime)
 
 	cTildePrime := make([]byte, parameters.Lambda/4)
 	sha3.ShakeSum256(cTildePrime, inputHash)
@@ -334,8 +308,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 			}
 		}
 	}
-
-	// fmt.Printf("%d, %d, %v, %v\n", zMax, parameters.Gamma1-parameters.Beta, cTilde, cTildePrime)
 
 	return zMax < (parameters.Gamma1-parameters.Beta) && subtle.ConstantTimeCompare(cTilde, cTildePrime) == 1
 }
