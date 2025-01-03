@@ -110,10 +110,10 @@ func TestMLDSA44RoundTrip(t *testing.T) {
 	testParamsRoundtrip(mldsa.ML_DSA_44_Parameters, t, 2560, 1312, 2420)
 }
 
-// func TestMLDSA65RoundTrip(t *testing.T) {
-// 	testParamsRoundtrip(mldsa.ML_DSA_65_Parameters, t, 4032, 1952, 3309)
-// }
+func TestMLDSA65RoundTrip(t *testing.T) {
+	testParamsRoundtrip(mldsa.ML_DSA_65_Parameters, t, 4032, 1952, 3309)
+}
 
-// func TestMLDSA87RoundTrip(t *testing.T) {
-// 	testParamsRoundtrip(mldsa.ML_DSA_87_Parameters, t, 4896, 2592, 4627)
-// }
+func TestMLDSA87RoundTrip(t *testing.T) {
+	testParamsRoundtrip(mldsa.ML_DSA_87_Parameters, t, 4896, 2592, 4627)
+}
