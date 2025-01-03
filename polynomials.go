@@ -87,59 +87,57 @@ func rejBoundedPoly(parameters ParameterSet, rho []byte) []int {
 	return a
 }
 
-var q = ML_DSA_44_Parameters.Q
-
-func addPolynomials(a, b []int) []int {
+func addPolynomials(parameters ParameterSet, a, b []int) []int {
 	result := make([]int, 256)
 
 	for i := range 256 {
-		result[i] = modCentered(a[i]+b[i], q)
+		result[i] = modCentered(a[i]+b[i], parameters.Q)
 	}
 
 	return result
 }
 
-func subtractPolynomials(a, b []int) []int {
+func subtractPolynomials(parameters ParameterSet, a, b []int) []int {
 	result := make([]int, 256)
 
 	for i := range 256 {
-		result[i] = modCentered(a[i]-b[i], q)
+		result[i] = modCentered(a[i]-b[i], parameters.Q)
 	}
 
 	return result
 }
 
-func vectorAddPolynomials(a, b [][]int) [][]int {
+func vectorAddPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
 	length := len(a)
 
 	result := make([][]int, length)
 
 	for i := range length {
-		result[i] = addPolynomials(a[i], b[i])
+		result[i] = addPolynomials(parameters, a[i], b[i])
 	}
 
 	return result
 }
 
-func vectorSubtractPolynomials(a, b [][]int) [][]int {
+func vectorSubtractPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
 	length := len(a)
 
 	result := make([][]int, length)
 
 	for i := range length {
-		result[i] = subtractPolynomials(a[i], b[i])
+		result[i] = subtractPolynomials(parameters, a[i], b[i])
 	}
 
 	return result
 }
 
-func scalarVectorMultiply(c int, v [][]int) [][]int {
+func scalarVectorMultiply(parameters ParameterSet, c int, v [][]int) [][]int {
 	w := make([][]int, len(v))
 
 	for i, row := range v {
 		w[i] = make([]int, len(row))
 		for j, value := range row {
-			w[i][j] = modCentered(value*c, q)
+			w[i][j] = modCentered(value*c, parameters.Q)
 		}
 	}
 

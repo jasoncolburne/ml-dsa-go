@@ -78,7 +78,7 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 
 	t := make([][]int, parameters.K)
 	for j := range parameters.K {
-		t[j] = addPolynomials(nttInverse(parameters, product[j]), s2[j])
+		t[j] = addPolynomials(parameters, nttInverse(parameters, product[j]), s2[j])
 	}
 
 	t0 := make([][]int, parameters.K)
@@ -165,8 +165,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 			}
 		}
 
-		z = vectorAddPolynomials(y, cs1)
-		r := vectorSubtractPolynomials(w, cs2)
+		z = vectorAddPolynomials(parameters, y, cs1)
+		r := vectorSubtractPolynomials(parameters, w, cs2)
 
 		r0Max := 0
 		for _, polynomial := range r {
@@ -202,9 +202,9 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 			h = nil
 		} else {
 			ct0 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, t0Hat))
-			ct0Neg := scalarVectorMultiply(-1, ct0)
+			ct0Neg := scalarVectorMultiply(parameters, -1, ct0)
 
-			wPrime := vectorAddPolynomials(vectorSubtractPolynomials(w, cs2), ct0)
+			wPrime := vectorAddPolynomials(parameters, vectorSubtractPolynomials(parameters, w, cs2), ct0)
 			h = make([][]bool, len(ct0Neg))
 
 			for i, ct0NegValues := range ct0Neg {
@@ -276,7 +276,7 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	c := sampleInBall(parameters, cTilde)
 	cHat := ntt(parameters, c)
 
-	ct := scalarVectorNtt(parameters, cHat, vectorNtt(parameters, scalarVectorMultiply(1<<parameters.D, t1)))
+	ct := scalarVectorNtt(parameters, cHat, vectorNtt(parameters, scalarVectorMultiply(parameters, 1<<parameters.D, t1)))
 	Az := matrixVectorNtt(parameters, AHat, vectorNtt(parameters, z))
 	Azct := subtractVectorNtt(parameters, Az, ct)
 
