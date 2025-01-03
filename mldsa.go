@@ -23,6 +23,11 @@ func (dsa *MLDSA) KeyGen() (public []byte, private []byte, err error) {
 	return keyGen(dsa.parameters, rnd)
 }
 
+func (dsa *MLDSA) KeyGenWithSeed(rnd []byte) (public []byte, private []byte, err error) {
+	return keyGen(dsa.parameters, rnd)
+}
+
+// hedged signing
 func (dsa *MLDSA) Sign(sk, message, ctx []byte) ([]byte, error) {
 	if len(ctx) > 255 {
 		return nil, fmt.Errorf("ctx length > 255")
@@ -33,8 +38,22 @@ func (dsa *MLDSA) Sign(sk, message, ctx []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	// for KAT testing
-	// rnd = make([]byte, SEEDLENGTH)
+	mPrime := integerToBytes(0, 1)
+	mPrime = append(mPrime, integerToBytes(len(ctx), 1)...)
+	mPrime = append(mPrime, ctx...)
+	mPrime = append(mPrime, message...)
+
+	sigma := sign(dsa.parameters, sk, mPrime, rnd)
+	return sigma, nil
+}
+
+// deterministic signing
+func (dsa *MLDSA) SignDeterministically(sk, message, ctx []byte) ([]byte, error) {
+	if len(ctx) > 255 {
+		return nil, fmt.Errorf("ctx length > 255")
+	}
+
+	rnd := make([]byte, SEEDLENGTH)
 
 	mPrime := integerToBytes(0, 1)
 	mPrime = append(mPrime, integerToBytes(len(ctx), 1)...)

@@ -8,11 +8,6 @@ import (
 
 func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte, err error) {
 	input := rnd
-
-	// for KAT testing, we fix the seed
-	// hexStr := "b585d4eb01085111a172a87688d0032e3381a9e9a35fdd6ef2f8aeb3b40eb5ce"
-	// input, _ := hex.DecodeString(hexStr)
-
 	input = append(input, integerToBytes(parameters.K, 1)...)
 	input = append(input, integerToBytes(parameters.L, 1)...)
 
