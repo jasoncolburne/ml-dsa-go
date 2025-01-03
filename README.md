@@ -2,7 +2,7 @@
 
 But, the implementation should be complete as per [NIST](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.204.pdf).
 
-It's possible there are a few timing vulnerabilities, and I've only just learned these concepts.
+It's possible there are a few timing vulnerabilities, and I've only just learned these ML-DSA concepts.
 
 However, I did my best to implement as instructed.
 
