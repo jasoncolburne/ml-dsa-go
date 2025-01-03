@@ -8,4 +8,4 @@ However, I did my best to implement as instructed.
 
 Future improvements:
 - [ ] Stop using Sha256 to provide entropy, use Sha3-256 or Blake3 or something approved and better
-- [ ] Use hardware for FFT math
+- [ ] Use hardware for NTT math
