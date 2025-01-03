@@ -54,15 +54,12 @@ func Verify(parameters ParameterSet, pk, message, signature, ctx []byte) (bool, 
 }
 
 func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte, err error) {
+	input := rnd
+
 	// for KAT testing, we fix the seed
-	// _ = rnd
-	// // hexStr := "f696484048ec21f96cf50a56d0759c448f3779752f0383d37449690694cf7a68"
-	// // hexStr := "6de62e3465a55c9c78a07d265be8540b3e58b0801a124d07ff12b438d5202ea0"
-	// // hexStr := "1eaae6bb91b27cd748c402c4111140d5a942cf3c95ff7977f88d2ef515bb26d0"
 	// hexStr := "b585d4eb01085111a172a87688d0032e3381a9e9a35fdd6ef2f8aeb3b40eb5ce"
 	// input, _ := hex.DecodeString(hexStr)
 
-	input := rnd
 	input = append(input, integerToBytes(parameters.K, 1)...)
 	input = append(input, integerToBytes(parameters.L, 1)...)
 
