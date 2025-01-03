@@ -1,6 +1,6 @@
 package mldsa
 
-var ZETAS = []int{
+var zetas = []int{
 	0, 4808194, 3765607, 3761513, 5178923, 5496691, 5234739, 5178987,
 	7778734, 3542485, 2682288, 2129892, 3764867, 7375178, 557458, 7159240,
 	5010068, 4317364, 2663378, 6705802, 4855975, 7946292, 676590, 7044481,
@@ -49,7 +49,7 @@ func ntt(parameters ParameterSet, w []int) []int {
 		start := 0
 		for start < 256 {
 			m += 1
-			z := ZETAS[m]
+			z := zetas[m]
 
 			for j := start; j < start+len; j++ {
 				t := modQ(z*wHat[j+len], q)
@@ -81,7 +81,7 @@ func nttInverse(parameters ParameterSet, wHat []int) []int {
 		start := 0
 		for start < 256 {
 			m -= 1
-			z := -ZETAS[m]
+			z := -zetas[m]
 			for j := start; j < start+len; j++ {
 				t := w[j]
 				w[j] = modQ(t+w[j+len], q)
