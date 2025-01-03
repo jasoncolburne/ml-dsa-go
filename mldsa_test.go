@@ -2,6 +2,7 @@ package mldsa_test
 
 import (
 	"encoding/hex"
+	"math/rand"
 	"testing"
 
 	mldsa "github.com/jasoncolburne/ml-dsa-go"
@@ -90,6 +91,47 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 	if !valid {
 		t.Fatalf("signature not valid!")
 	}
+
+	sigPrime := copyAndMutate(sig)
+	valid, err = mldsa.Verify(params, vk, message, sigPrime, ctx)
+	if err != nil {
+		t.Fatalf("error verifying: %v", err)
+	}
+
+	if valid {
+		t.Fatalf("mutated signature is still valid!")
+	}
+
+	messagePrime := copyAndMutate(message)
+	valid, err = mldsa.Verify(params, vk, messagePrime, sig, ctx)
+	if err != nil {
+		t.Fatalf("error verifying: %v", err)
+	}
+
+	if valid {
+		t.Fatalf("mutated message is still valid!")
+	}
+
+	ctxPrime := copyAndMutate(ctx)
+	valid, err = mldsa.Verify(params, vk, message, sig, ctxPrime)
+	if err != nil {
+		t.Fatalf("error verifying: %v", err)
+	}
+
+	if valid {
+		t.Fatalf("mutated context is still valid!")
+	}
+}
+
+func copyAndMutate(bytes []byte) []byte {
+	result := make([]byte, len(bytes))
+	copy(result, bytes)
+
+	offset := rand.Intn(len(bytes))
+	// flip a bit in some byte
+	result[offset] = byte(int(result[offset]) ^ 0x01)
+
+	return result
 }
 
 // func calculateEntropy(data []byte) float64 {
