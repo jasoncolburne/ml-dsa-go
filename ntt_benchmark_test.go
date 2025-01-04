@@ -18,14 +18,6 @@ func benchmarkNtt(parameters ParameterSet, b *testing.B) {
 	}
 }
 
-func BenchmarkNTT44(b *testing.B) {
+func BenchmarkNTT(b *testing.B) {
 	benchmarkNtt(ML_DSA_44_Parameters, b)
-}
-
-func BenchmarkNTT65(b *testing.B) {
-	benchmarkNtt(ML_DSA_65_Parameters, b)
-}
-
-func BenchmarkNTT87(b *testing.B) {
-	benchmarkNtt(ML_DSA_87_Parameters, b)
 }

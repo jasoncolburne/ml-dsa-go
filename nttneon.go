@@ -179,66 +179,6 @@ func scalarVectorNtt(parameters ParameterSet, cHat []int32, vHat [][]int32) [][]
 	return wHat
 }
 
-// func matrixVectorNtt(parameters ParameterSet, MHat [][][]int32, vHat [][]int32) [][]int32 {
-// 	K := parameters.K
-// 	L := parameters.L
-// 	Q := parameters.Q
-
-// 	wHat := make([][]int32, K)
-// 	for i := range K {
-// 		wHat[i] = make([]int32, 256)
-// 	}
-
-// 	// Ensure correct sizes
-// 	if len(MHat) != K || len(wHat) != K || len(vHat) != L {
-// 		panic("Invalid dimensions for MHat, vHat, or wHat")
-// 	}
-
-// 	// Flatten MHat
-// 	MHatFlat := make([]C.int32, K*L*256)
-// 	for i := 0; i < K; i++ {
-// 		for j := 0; j < L; j++ {
-// 			for k := 0; k < 256; k++ {
-// 				MHatFlat[i*L*256+j*256+k] = C.int32(MHat[i][j][k])
-// 			}
-// 		}
-// 	}
-
-// 	fmt.Printf("mhatflat %v\n", MHatFlat)
-
-// 	// Flatten vHat
-// 	vHatFlat := make([]C.int32, L*256)
-// 	for i := 0; i < L; i++ {
-// 		for j := 0; j < 256; j++ {
-// 			vHatFlat[i*256+j] = C.int32(vHat[i][j])
-// 		}
-// 	}
-
-// 	// Allocate flat wHat for results
-// 	wHatFlat := make([]C.int32, K*256)
-
-// 	// Call the C function
-// 	C.matrix_vector_ntt(
-// 		(***C.int32)(unsafe.Pointer(&MHatFlat[0])),
-// 		(**C.int32)(unsafe.Pointer(&vHatFlat[0])),
-// 		(**C.int32)(unsafe.Pointer(&wHatFlat[0])),
-// 		C.int32(K),
-// 		C.int32(L),
-// 		C.int32(Q),
-// 	)
-
-// 	// Copy results back into wHat
-// 	for i := 0; i < K; i++ {
-// 		for j := 0; j < 256; j++ {
-// 			wHat[i][j] = int32(wHatFlat[i*256+j])
-// 		}
-// 	}
-
-// 	// fmt.Printf("wHat: %v\n", wHat)
-
-// 	return wHat
-// }
-
 func matrixVectorNtt(parameters ParameterSet, MHat [][][]int32, vHat [][]int32) [][]int32 {
 	wHat := make([][]int32, parameters.K)
 

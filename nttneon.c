@@ -44,39 +44,9 @@ void multiply_ntt(const int64_t *aHat, const int64_t *bHat, int64_t *cHat, int32
         int64x2_t a_vec = vld1q_s64(&aHat[i]);
         int64x2_t b_vec = vld1q_s64(&bHat[i]);
 
-        // Multiply the vectors
         int32x4_t prod_vec = arm_vmulq_s64(a_vec, b_vec);
-
-        // Manual reduction modulo q
         prod_vec = reduce_mod_q_vec(prod_vec, q);
 
-        // Store the result in cHat
         vst1q_s64(&cHat[i], prod_vec);
     }
 }
-
-// void matrix_vector_ntt(const int32 *MHat, const int32 *vHat, int32 *wHat, int32 K, int32 L, int32 q) {
-//     for (int32 i = 0; i < K; i++) {
-//         int32x4_t sum_vec[64];
-//         for (int32 v = 0; v < 64; v++) {
-//             sum_vec[v] = vdupq_n_s32(0);
-//         }
-
-//         for (int32 j = 0; j < L; j++) {
-//             for (int32 k = 0; k < 256; k += 4) {
-//                 int32x4_t mat_row_vec = vld1q_s32(&MHat[(i * L * 256) + (j * 256) + k]);
-//                 int32x4_t vec_elem_vec = vld1q_s32(&vHat[(j * 256) + k]);
-
-//                 int32x4_t product_vec = vmulq_s32(mat_row_vec, vec_elem_vec);
-//                 reduce_mod_q_vec(product_vec, q);
-
-//                 sum_vec[k / 4] = vaddq_s32(sum_vec[k / 4], product_vec);
-//                 sum_vec[k / 4] = reduce_mod_q_vec(sum_vec[k / 4], q);
-//               }
-//         }
-
-//         for (int32 k = 0; k < 256; k += 4) {
-//             vst1q_s32(&wHat[(i * 256) + k], sum_vec[k / 4]);
-//         }
-//     }
-// }
