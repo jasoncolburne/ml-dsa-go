@@ -13,7 +13,6 @@ func benchmarkNtt(parameters ParameterSet, b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		// Function under test
 		ntt(parameters, w)
 	}
 }
