@@ -22,6 +22,16 @@ void add_ntt(const int32_t *aHat, const int32_t *bHat, int32_t *cHat, int32_t q)
     }
 }
 
+void subtract_ntt(const int32_t *aHat, const int32_t *bHat, int32_t *cHat, int32_t q) {
+    for (int i = 0; i < 256; i += 4) {
+        int32x4_t a_vec = vld1q_s32(&aHat[i]);
+        int32x4_t b_vec = vld1q_s32(&bHat[i]);
+        int32x4_t diff_vec = vsubq_s32(a_vec, b_vec);
+        diff_vec = reduce_mod_q_vec(diff_vec, q);
+        vst1q_s32(&cHat[i], diff_vec);
+    }
+}
+
 // void matrix_vector_ntt(const int32 *MHat, const int32 *vHat, int32 *wHat, int32 K, int32 L, int32 q) {
 //     for (int32 i = 0; i < K; i++) {
 //         int32x4_t sum_vec[64];

@@ -89,11 +89,18 @@ func addNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
 }
 
 func subtractNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
+	if len(aHat) != 256 || len(bHat) != 256 {
+		panic("input arrays must have length 256")
+	}
+
 	cHat := make([]int32, 256)
 
-	for i := range 256 {
-		cHat[i] = modQ(aHat[i]-bHat[i], parameters.Q)
-	}
+	C.subtract_ntt(
+		(*C.int)(unsafe.Pointer(&aHat[0])),
+		(*C.int)(unsafe.Pointer(&bHat[0])),
+		(*C.int)(unsafe.Pointer(&cHat[0])),
+		C.int(parameters.Q),
+	)
 
 	return cHat
 }
