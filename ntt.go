@@ -1,4 +1,4 @@
-//go:build !hardwarentt
+//go:build !hardware
 
 package mldsa
 
