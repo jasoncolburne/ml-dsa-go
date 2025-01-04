@@ -2,15 +2,12 @@
 
 #include <arm_neon.h>
 #include <stdint.h>
-#include <stdio.h>
 
 int32x4_t reduce_mod_q_vec(int32x4_t v, int32_t q) {
     int32_t reduced[4];
     vst1q_s32(reduced, v);
     for (int i = 0; i < 4; i++) {
-        // printf("%d:", reduced[i]);
         reduced[i] = ((reduced[i] % q) + q) % q;
-        // printf("%d\n", reduced[i]);
     }
     return vld1q_s32(reduced);
 }
