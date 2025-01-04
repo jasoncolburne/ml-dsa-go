@@ -1,18 +1,18 @@
 package mldsa
 
 type ParameterSet struct {
-	Q      int // modulus
-	Zeta   int // a 512th root of unity in Zq
-	D      int // # of dropped bits from t
-	Tau    int // # of +/-1s in polynomial c
-	Lambda int // collision strength of c~
-	Gamma1 int // coefficient range of y
-	Gamma2 int // low order rounding range
-	K      int // rows in A
-	L      int // columns in A
-	Eta    int // private key range
-	Beta   int // Tau * Eta
-	Omega  int // max # of 1s in the hint h
+	Q      int32 // modulus
+	Zeta   int32 // a 512th root of unity in Zq
+	D      int32 // # of dropped bits from t
+	Tau    int32 // # of +/-1s in polynomial c
+	Lambda int32 // collision strength of c~
+	Gamma1 int32 // coefficient range of y
+	Gamma2 int32 // low order rounding range
+	K      int32 // rows in A
+	L      int32 // columns in A
+	Eta    int32 // private key range
+	Beta   int32 // Tau * Eta
+	Omega  int32 // max # of 1s in the hint h
 }
 
 var (

@@ -4,8 +4,8 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func sampleInBall(parameters ParameterSet, rho []byte) []int {
-	c := make([]int, 256)
+func sampleInBall(parameters ParameterSet, rho []byte) []int32 {
+	c := make([]int32, 256)
 
 	hasher := sha3.NewShake256()
 	hasher.Write(rho)
@@ -18,11 +18,11 @@ func sampleInBall(parameters ParameterSet, rho []byte) []int {
 		jSlice := make([]byte, 1)
 		hasher.Read(jSlice)
 
-		for int(jSlice[0]) > i {
+		for int32(jSlice[0]) > i {
 			hasher.Read(jSlice)
 		}
 
-		j := int(jSlice[0])
+		j := int32(jSlice[0])
 		c[i] = c[j]
 
 		if h[i+parameters.Tau-256] {
@@ -35,8 +35,8 @@ func sampleInBall(parameters ParameterSet, rho []byte) []int {
 	return c
 }
 
-func rejNttPoly(parameters ParameterSet, rho []byte) []int {
-	a := make([]int, 256)
+func rejNttPoly(parameters ParameterSet, rho []byte) []int32 {
+	a := make([]int32, 256)
 
 	hasher := sha3.NewShake128()
 	hasher.Write(rho)
@@ -58,8 +58,8 @@ func rejNttPoly(parameters ParameterSet, rho []byte) []int {
 	return a
 }
 
-func rejBoundedPoly(parameters ParameterSet, rho []byte) []int {
-	a := make([]int, 256)
+func rejBoundedPoly(parameters ParameterSet, rho []byte) []int32 {
+	a := make([]int32, 256)
 
 	hasher := sha3.NewShake256()
 	hasher.Write(rho)
@@ -69,7 +69,7 @@ func rejBoundedPoly(parameters ParameterSet, rho []byte) []int {
 		zArray := make([]byte, 1)
 		hasher.Read(zArray)
 
-		z := int(zArray[0])
+		z := int32(zArray[0])
 		z0 := coeffFromHalfByte(parameters, modQ(z, 16))
 		z1 := coeffFromHalfByte(parameters, z/16)
 
@@ -87,8 +87,8 @@ func rejBoundedPoly(parameters ParameterSet, rho []byte) []int {
 	return a
 }
 
-func addPolynomials(parameters ParameterSet, a, b []int) []int {
-	result := make([]int, 256)
+func addPolynomials(parameters ParameterSet, a, b []int32) []int32 {
+	result := make([]int32, 256)
 
 	for i := range 256 {
 		result[i] = modCentered(a[i]+b[i], parameters.Q)
@@ -97,8 +97,8 @@ func addPolynomials(parameters ParameterSet, a, b []int) []int {
 	return result
 }
 
-func subtractPolynomials(parameters ParameterSet, a, b []int) []int {
-	result := make([]int, 256)
+func subtractPolynomials(parameters ParameterSet, a, b []int32) []int32 {
+	result := make([]int32, 256)
 
 	for i := range 256 {
 		result[i] = modCentered(a[i]-b[i], parameters.Q)
@@ -107,10 +107,10 @@ func subtractPolynomials(parameters ParameterSet, a, b []int) []int {
 	return result
 }
 
-func vectorAddPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
+func vectorAddPolynomials(parameters ParameterSet, a, b [][]int32) [][]int32 {
 	length := len(a)
 
-	result := make([][]int, length)
+	result := make([][]int32, length)
 
 	for i := range length {
 		result[i] = addPolynomials(parameters, a[i], b[i])
@@ -119,10 +119,10 @@ func vectorAddPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
 	return result
 }
 
-func vectorSubtractPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
+func vectorSubtractPolynomials(parameters ParameterSet, a, b [][]int32) [][]int32 {
 	length := len(a)
 
-	result := make([][]int, length)
+	result := make([][]int32, length)
 
 	for i := range length {
 		result[i] = subtractPolynomials(parameters, a[i], b[i])
@@ -131,11 +131,11 @@ func vectorSubtractPolynomials(parameters ParameterSet, a, b [][]int) [][]int {
 	return result
 }
 
-func scalarVectorMultiply(parameters ParameterSet, c int, v [][]int) [][]int {
-	w := make([][]int, len(v))
+func scalarVectorMultiply(parameters ParameterSet, c int32, v [][]int32) [][]int32 {
+	w := make([][]int32, len(v))
 
 	for i, row := range v {
-		w[i] = make([]int, len(row))
+		w[i] = make([]int32, len(row))
 		for j, value := range row {
 			w[i][j] = modCentered(value*c, parameters.Q)
 		}

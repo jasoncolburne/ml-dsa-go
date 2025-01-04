@@ -9,7 +9,7 @@ import (
 )
 
 type TestVector struct {
-	Count      int
+	Count      int32
 	Seed       string
 	PrivateKey string
 	PublicKey  string

@@ -6,7 +6,7 @@ import (
 	drbg "github.com/canonical/go-sp800.90a-drbg"
 )
 
-func rbg(len int) ([]byte, error) {
+func rbg(len int32) ([]byte, error) {
 	hashRbg, err := drbg.NewHash(crypto.SHA256, []byte{}, nil)
 	if err != nil {
 		return nil, err

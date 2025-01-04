@@ -81,7 +81,7 @@ func copyAndMutate(bytes []byte) []byte {
 
 	offset := rand.Intn(len(bytes))
 	// flip a bit in some byte
-	result[offset] = byte(int(result[offset]) ^ 0x01)
+	result[offset] = byte(int32(result[offset]) ^ 0x01)
 
 	return result
 }
