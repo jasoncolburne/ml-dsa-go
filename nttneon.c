@@ -43,10 +43,7 @@ void multiply_ntt(const int64_t *aHat, const int64_t *bHat, int64_t *cHat, int32
     for (int i = 0; i < 256; i += 2) {
         int64x2_t a_vec = vld1q_s64(&aHat[i]);
         int64x2_t b_vec = vld1q_s64(&bHat[i]);
-
-        int32x4_t prod_vec = arm_vmulq_s64(a_vec, b_vec);
-        prod_vec = reduce_mod_q_vec(prod_vec, q);
-
+        int32x4_t prod_vec = reduce_mod_q_vec(arm_vmulq_s64(a_vec, b_vec), q);
         vst1q_s64(&cHat[i], prod_vec);
     }
 }
