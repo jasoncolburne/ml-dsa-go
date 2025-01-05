@@ -4,30 +4,22 @@ package mldsa
 
 func ntt(parameters ParameterSet, w []int32) []int32 {
 	wHat := make([]int32, 256)
-	for j := range 256 {
-		wHat[j] = w[j]
-	}
+	copy(wHat, w)
 
 	m := 0
-	len := 128
 	q := parameters.Q
 
-	for len >= 1 {
-		start := 0
-		for start < 256 {
+	for len := 128; len >= 1; len /= 2 {
+		for start := 0; start < 256; start += 2 * len {
 			m += 1
 			z := zetas[m]
 
 			for j := start; j < start+len; j++ {
-				t := modQ(z*wHat[j+len], q)
+				t := modMultiply(z, wHat[j+len], q)
 				wHat[j+len] = modQ(wHat[j]-t, q)
 				wHat[j] = modQ(wHat[j]+t, q)
 			}
-
-			start += 2 * len
 		}
-
-		len /= 2
 	}
 
 	return wHat
@@ -53,17 +45,18 @@ func nttInverse(parameters ParameterSet, wHat []int32) []int32 {
 				t := w[j]
 				w[j] = modQ(t+w[j+len], q)
 				w[j+len] = modQ(t-w[j+len], q)
-				w[j+len] = modQ(z*w[j+len], q)
+				w[j+len] = modMultiply(z, w[j+len], q)
 			}
 			start += 2 * len
 		}
 		len = 2 * len
 	}
 
-	f := 8347681
+	f := int32(8347681)
+	// modMultiply(f, 256, q) == 1
 
 	for j := range 256 {
-		w[j] = modCentered(f*w[j], q)
+		w[j] = modCentered(modMultiply(f, w[j], q), q)
 	}
 
 	return w
@@ -93,7 +86,7 @@ func multiplyNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
 	cHat := make([]int32, 256)
 
 	for i := range 256 {
-		cHat[i] = modQ(aHat[i]*bHat[i], parameters.Q)
+		cHat[i] = modMultiply(aHat[i], bHat[i], parameters.Q)
 	}
 
 	return cHat
