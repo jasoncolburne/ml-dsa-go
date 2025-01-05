@@ -17,10 +17,10 @@ func TestCoeffFromThreeBytes(t *testing.T) {
 }
 
 func TestSimpleBitPackRoundtrip(t *testing.T) {
-	b := (1 << 11) - 1
-	input := make([]int, 256)
+	b := int32((1 << 11) - 1)
+	input := make([]int32, 256)
 	for i := range 256 {
-		input[i] = rand.Intn(b)
+		input[i] = int32(rand.Intn(int(b)))
 	}
 
 	result := simpleBitUnpack(simpleBitPack(input, b), b)
@@ -34,9 +34,9 @@ func TestSimpleBitPackRoundtrip(t *testing.T) {
 
 func TestIntegerToBitsRoundtrip(t *testing.T) {
 	q := ML_DSA_44_Parameters.Q
-	alpha := bits.Len(uint(q - 1))
+	alpha := int32(bits.Len(uint(q - 1)))
 	for i := range 100 {
-		x := rand.Intn(q)
+		x := int32(rand.Intn(int(q)))
 		y := bitsToInteger(integerToBits(x, alpha), alpha)
 		if x != y {
 			t.Fatalf("test[%d] failed, %d != %d", i, x, y)

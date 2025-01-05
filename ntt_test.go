@@ -7,9 +7,9 @@ import (
 
 func TestNTTRoundTrip(t *testing.T) {
 	params := ML_DSA_44_Parameters
-	input := make([]int, 256)
+	input := make([]int32, 256)
 	for i := range 256 {
-		input[i] = rand.Intn(params.Q) - params.Q/2
+		input[i] = int32(rand.Intn(int(params.Q))) - params.Q/2
 	}
 	result := nttInverse(params, ntt(params, input))
 

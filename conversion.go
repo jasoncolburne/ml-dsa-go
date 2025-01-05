@@ -4,7 +4,7 @@ import (
 	"math/bits"
 )
 
-func coeffFromHalfByte(parameters ParameterSet, b int) *int {
+func coeffFromHalfByte(parameters ParameterSet, b int32) *int32 {
 	if parameters.Eta == 2 && b < 15 {
 		result := 2 - modQ(b, 5)
 		return &result
@@ -18,13 +18,13 @@ func coeffFromHalfByte(parameters ParameterSet, b int) *int {
 	return nil
 }
 
-func coeffFromThreeBytes(parameters ParameterSet, b0, b1, b2 byte) *int {
-	b2Prime := int(b2)
+func coeffFromThreeBytes(parameters ParameterSet, b0, b1, b2 byte) *int32 {
+	b2Prime := int32(b2)
 	if b2Prime > 127 {
 		b2Prime -= 128
 	}
 
-	z := 65536*b2Prime + 256*int(b1) + int(b0)
+	z := 65536*b2Prime + 256*int32(b1) + int32(b0)
 	if z < parameters.Q {
 		return &z
 	}
@@ -39,7 +39,7 @@ func bitsToBytes(y []bool) []byte {
 	for i := range alpha {
 		// TODO: evaluate attacks (we optimized out a computation using this bool)
 		if y[i] {
-			z[i/8] += (1 << modQ(i, 8))
+			z[i/8] += (1 << modQ(int32(i), 8))
 		}
 	}
 
@@ -57,7 +57,7 @@ func bytesToBits(z []byte) []bool {
 
 	for i := range zLength {
 		for j := range 8 {
-			y[8*i+j] = modQ(int(zPrime[i]), 2) == 1
+			y[8*i+j] = modQ(int32(zPrime[i]), 2) == 1
 			zPrime[i] /= 2
 		}
 	}
@@ -65,12 +65,12 @@ func bytesToBits(z []byte) []bool {
 	return y
 }
 
-func bitsToInteger(y []bool, alpha int) int {
-	x := 0
+func bitsToInteger(y []bool, alpha int32) int32 {
+	x := int32(0)
 
-	for i := 1; i <= alpha; i++ {
+	for i := 1; i <= int(alpha); i++ {
 		x <<= 1
-		if y[alpha-i] {
+		if y[int(alpha)-i] {
 			x += 1
 		}
 	}
@@ -78,7 +78,7 @@ func bitsToInteger(y []bool, alpha int) int {
 	return x
 }
 
-func integerToBits(x, alpha int) []bool {
+func integerToBits(x, alpha int32) []bool {
 	y := make([]bool, alpha)
 
 	xPrime := x
@@ -91,7 +91,7 @@ func integerToBits(x, alpha int) []bool {
 	return y
 }
 
-func integerToBytes(x int, alpha int) []byte {
+func integerToBytes(x int32, alpha int32) []byte {
 	y := make([]byte, alpha)
 
 	xPrime := x
@@ -103,8 +103,8 @@ func integerToBytes(x int, alpha int) []byte {
 	return y
 }
 
-func pkEncode(parameters ParameterSet, rho []byte, t [][]int) []byte {
-	width := bits.Len(uint(parameters.Q-1)) - parameters.D
+func pkEncode(parameters ParameterSet, rho []byte, t [][]int32) []byte {
+	width := int32(bits.Len(uint(parameters.Q-1))) - parameters.D
 	pk := make([]byte, len(rho))
 	copy(pk, rho)
 
@@ -115,13 +115,13 @@ func pkEncode(parameters ParameterSet, rho []byte, t [][]int) []byte {
 	return pk
 }
 
-func pkDecode(parameters ParameterSet, pk []byte) ([]byte, [][]int) {
+func pkDecode(parameters ParameterSet, pk []byte) ([]byte, [][]int32) {
 	rho := pk[:32]
 	z := pk[32:]
-	toShift := bits.Len(uint(parameters.Q-1)) - parameters.D
+	toShift := int32(bits.Len(uint(parameters.Q-1))) - parameters.D
 	width := 32 * toShift
 
-	t := make([][]int, parameters.K)
+	t := make([][]int32, parameters.K)
 	for i := range parameters.K {
 		offset := i * width
 		limit := offset + width
@@ -134,7 +134,7 @@ func pkDecode(parameters ParameterSet, pk []byte) ([]byte, [][]int) {
 func skEncode(
 	parameters ParameterSet,
 	rho, kappa, tr []byte,
-	s1, s2, t [][]int,
+	s1, s2, t [][]int32,
 ) []byte {
 	sk := make([]byte, 128)
 	copy(sk[:32], rho)
@@ -151,7 +151,7 @@ func skEncode(
 		sk = append(sk, bitPack(s2[i], eta, eta)...)
 	}
 
-	x := 1 << (parameters.D - 1)
+	x := int32(1) << (parameters.D - 1)
 	y := x - 1
 	for i := range parameters.K {
 		sk = append(sk, bitPack(t[i], y, x)...)
@@ -165,22 +165,22 @@ func skDecode(parameters ParameterSet, sk []byte) (
 	rho []byte,
 	kappa []byte,
 	tr []byte,
-	s1 [][]int,
-	s2 [][]int,
-	t [][]int,
+	s1 [][]int32,
+	s2 [][]int32,
+	t [][]int32,
 ) {
 	rho = sk[:32]
 	kappa = sk[32:64]
 	tr = sk[64:128]
 
-	baseOffset := 128
+	baseOffset := int32(128)
 
 	eta := parameters.Eta
-	width := 32 * bits.Len(uint(2*eta))
+	width := int32(32 * bits.Len(uint(2*eta)))
 
-	s1 = make([][]int, parameters.L)
+	s1 = make([][]int32, parameters.L)
 	for i := range parameters.L {
-		offset := baseOffset + width*i
+		offset := baseOffset + width*int32(i)
 		limit := offset + width
 		y := sk[offset:limit]
 		s1[i] = bitUnpack(y, eta, eta)
@@ -188,7 +188,7 @@ func skDecode(parameters ParameterSet, sk []byte) (
 
 	baseOffset += width * parameters.L
 
-	s2 = make([][]int, parameters.K)
+	s2 = make([][]int32, parameters.K)
 	for i := range parameters.K {
 		offset := baseOffset + width*i
 		limit := offset + width
@@ -198,10 +198,10 @@ func skDecode(parameters ParameterSet, sk []byte) (
 
 	baseOffset += width * parameters.K
 	wWidth := 32 * parameters.D
-	x := 1 << (parameters.D - 1)
+	x := int32(1) << (parameters.D - 1)
 	y := x - 1
 
-	t = make([][]int, parameters.K)
+	t = make([][]int32, parameters.K)
 	for i := range parameters.K {
 		offset := baseOffset + wWidth*i
 		limit := offset + wWidth
@@ -212,7 +212,7 @@ func skDecode(parameters ParameterSet, sk []byte) (
 	return
 }
 
-func sigEncode(parameters ParameterSet, cTilde []byte, z [][]int, h [][]bool) []byte {
+func sigEncode(parameters ParameterSet, cTilde []byte, z [][]int32, h [][]bool) []byte {
 	sigma := make([]byte, len(cTilde))
 	copy(sigma, cTilde)
 
@@ -226,14 +226,14 @@ func sigEncode(parameters ParameterSet, cTilde []byte, z [][]int, h [][]bool) []
 	return sigma
 }
 
-func sigDecode(parameters ParameterSet, sigma []byte) ([]byte, [][]int, [][]bool) {
-	width := 32 * (1 + bits.Len(uint(parameters.Gamma1-1)))
+func sigDecode(parameters ParameterSet, sigma []byte) ([]byte, [][]int32, [][]bool) {
+	width := int32(32 * (1 + bits.Len(uint(parameters.Gamma1-1))))
 
 	cTilde := sigma[:parameters.Lambda/4]
 	x := sigma[parameters.Lambda/4 : parameters.Lambda/4+parameters.L*width]
 	y := sigma[parameters.Lambda/4+parameters.L*width:]
 
-	z := make([][]int, parameters.L)
+	z := make([][]int32, parameters.L)
 	for i := range parameters.L {
 		offset := i * width
 		limit := offset + width
@@ -245,7 +245,7 @@ func sigDecode(parameters ParameterSet, sigma []byte) ([]byte, [][]int, [][]bool
 	return cTilde, z, h
 }
 
-func w1Encode(parameters ParameterSet, w [][]int) []byte {
+func w1Encode(parameters ParameterSet, w [][]int32) []byte {
 	w1Tilde := []byte{}
 	length := len(w)
 
@@ -257,47 +257,47 @@ func w1Encode(parameters ParameterSet, w [][]int) []byte {
 	return w1Tilde
 }
 
-func bitPack(w []int, a, b int) []byte {
+func bitPack(w []int32, a, b int32) []byte {
 	z := []bool{}
 
 	for i := range 256 {
-		z = append(z, integerToBits(b-w[i], bits.Len(uint(a+b)))...)
+		z = append(z, integerToBits(b-w[i], int32(bits.Len(uint(a+b))))...)
 	}
 
 	return bitsToBytes(z)
 }
 
-func bitUnpack(v []byte, a, b int) []int {
+func bitUnpack(v []byte, a, b int32) []int32 {
 	c := bits.Len(uint(a + b))
 	z := bytesToBits(v)
 
-	w := make([]int, 256)
+	w := make([]int32, 256)
 
 	for i := range 256 {
 		offset := i * c
 		limit := offset + c
-		w[i] = b - bitsToInteger(z[offset:limit], c)
+		w[i] = b - bitsToInteger(z[offset:limit], int32(c))
 	}
 
 	return w
 }
 
-func simpleBitPack(w []int, b int) []byte {
+func simpleBitPack(w []int32, b int32) []byte {
 	z := []bool{}
 	for i := range 256 {
-		z = append(z, integerToBits(w[i], bits.Len(uint(b)))...)
+		z = append(z, integerToBits(w[i], int32(bits.Len(uint(b))))...)
 	}
 
 	return bitsToBytes(z)
 }
 
-func simpleBitUnpack(v []byte, b int) []int {
-	c := bits.Len(uint(b))
+func simpleBitUnpack(v []byte, b int32) []int32 {
+	c := int32(bits.Len(uint(b)))
 	z := bytesToBits(v)
 
-	w := make([]int, 256)
+	w := make([]int32, 256)
 	for i := range 256 {
-		offset := i * c
+		offset := int32(i) * c
 		limit := offset + c
 		w[i] = bitsToInteger(z[offset:limit], c)
 	}
@@ -334,26 +334,26 @@ func hintBitUnpack(parameters ParameterSet, y []byte) [][]bool {
 	for i := range parameters.K {
 		h[i] = make([]bool, 256)
 
-		yOmegaI := int(y[omega+i])
+		yOmegaI := int32(y[omega+i])
 
-		if yOmegaI < index || yOmegaI > omega {
+		if yOmegaI < int32(index) || yOmegaI > omega {
 			return nil
 		}
 
 		first := index
-		for index < yOmegaI {
+		for int32(index) < yOmegaI {
 			if index > first {
 				if y[index-1] >= y[index] {
 					return nil
 				}
 			}
 
-			h[i][int(y[index])] = true
+			h[i][int32(y[index])] = true
 			index += 1
 		}
 	}
 
-	for i := index; i < omega; i++ {
+	for i := index; int32(i) < omega; i++ {
 		if y[i] != byte(0) {
 			return nil
 		}

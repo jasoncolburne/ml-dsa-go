@@ -39,7 +39,7 @@ func (dsa *MLDSA) Sign(sk, message, ctx []byte) ([]byte, error) {
 	}
 
 	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(len(ctx), 1)...)
+	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
 	mPrime = append(mPrime, ctx...)
 	mPrime = append(mPrime, message...)
 
@@ -56,7 +56,7 @@ func (dsa *MLDSA) SignDeterministically(sk, message, ctx []byte) ([]byte, error)
 	rnd := make([]byte, SEEDLENGTH)
 
 	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(len(ctx), 1)...)
+	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
 	mPrime = append(mPrime, ctx...)
 	mPrime = append(mPrime, message...)
 
@@ -70,7 +70,7 @@ func (dsa *MLDSA) Verify(pk, message, signature, ctx []byte) (bool, error) {
 	}
 
 	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(len(ctx), 1)...)
+	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
 	mPrime = append(mPrime, ctx...)
 	mPrime = append(mPrime, message...)
 

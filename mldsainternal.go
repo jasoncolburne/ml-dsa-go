@@ -24,16 +24,16 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 
 	product := matrixVectorNtt(parameters, AHat, s1Hat)
 
-	t := make([][]int, parameters.K)
+	t := make([][]int32, parameters.K)
 	for j := range parameters.K {
 		t[j] = addPolynomials(parameters, nttInverse(parameters, product[j]), s2[j])
 	}
 
-	t0 := make([][]int, parameters.K)
-	t1 := make([][]int, parameters.K)
+	t0 := make([][]int32, parameters.K)
+	t1 := make([][]int32, parameters.K)
 	for j := range parameters.K {
-		t0[j] = make([]int, 256)
-		t1[j] = make([]int, 256)
+		t0[j] = make([]int32, 256)
+		t1[j] = make([]int32, 256)
 		for i := range 256 {
 			t1[j][i], t0[j][i] = power2Round(parameters, t[j][i])
 		}
@@ -71,8 +71,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 	rhoPrimePrime := make([]byte, 64)
 	sha3.ShakeSum256(rhoPrimePrime, inputHash)
 
-	k := 0
-	var z [][]int
+	k := int32(0)
+	var z [][]int32
 	var h [][]bool
 	var cTilde []byte
 
@@ -82,14 +82,14 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		yHat := vectorNtt(parameters, y)
 		product := matrixVectorNtt(parameters, AHat, yHat)
 
-		w := make([][]int, parameters.K)
+		w := make([][]int32, parameters.K)
 		for j, polynomial := range product {
 			w[j] = nttInverse(parameters, polynomial)
 		}
 
-		w1 := make([][]int, parameters.K)
+		w1 := make([][]int32, parameters.K)
 		for j, row := range w {
-			w1[j] = make([]int, 256)
+			w1[j] = make([]int32, 256)
 			for i, value := range row {
 				w1[j][i] = highBits(parameters, value)
 			}
@@ -109,17 +109,17 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		cs2 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, s2Hat))
 		for i, row := range cs1 {
 			for j, value := range row {
-				cs1[i][j] = modCentered(value, parameters.Q)
+				cs1[i][j] = modQSymmetric(value, parameters.Q)
 			}
 		}
 
 		z = vectorAddPolynomials(parameters, y, cs1)
 		r := vectorSubtractPolynomials(parameters, w, cs2)
 
-		r0Max := 0
+		r0Max := int32(0)
 		for _, polynomial := range r {
 			for _, value := range polynomial {
-				r0 := lowBits(parameters, value)
+				r0 := int32(lowBits(parameters, value))
 				if r0 < 0 {
 					r0 *= -1
 				}
@@ -130,7 +130,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 			}
 		}
 
-		zMax := 0
+		zMax := int32(0)
 		for _, polynomial := range z {
 			for _, value := range polynomial {
 				zValue := value
@@ -162,7 +162,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 				}
 			}
 
-			ct0Max := 0
+			ct0Max := int32(0)
 			for _, row := range ct0 {
 				for _, value := range row {
 					if ct0Max < value {
@@ -171,7 +171,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 				}
 			}
 
-			onesInH := 0
+			onesInH := int32(0)
 			for _, row := range h {
 				for _, value := range row {
 					if value {
@@ -189,12 +189,12 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		k += parameters.L
 	}
 
-	zModQCentered := make([][]int, len(z))
+	zModQCentered := make([][]int32, len(z))
 	for i, row := range z {
-		zModQCentered[i] = make([]int, len(row))
+		zModQCentered[i] = make([]int32, len(row))
 
 		for j, value := range row {
-			zModQCentered[i][j] = modCentered(value, parameters.Q)
+			zModQCentered[i][j] = modQSymmetric(value, parameters.Q)
 		}
 	}
 
@@ -228,14 +228,14 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	Az := matrixVectorNtt(parameters, AHat, vectorNtt(parameters, z))
 	Azct := subtractVectorNtt(parameters, Az, ct)
 
-	wApproxPrime := make([][]int, parameters.K)
+	wApproxPrime := make([][]int32, parameters.K)
 	for i, value := range Azct {
 		wApproxPrime[i] = nttInverse(parameters, value)
 	}
 
-	w1Prime := make([][]int, parameters.K)
+	w1Prime := make([][]int32, parameters.K)
 	for i, row := range wApproxPrime {
-		w1Prime[i] = make([]int, len(row))
+		w1Prime[i] = make([]int32, len(row))
 		for j, value := range row {
 			w1Prime[i][j] = useHint(parameters, h[i][j], value)
 		}
@@ -248,7 +248,7 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	cTildePrime := make([]byte, parameters.Lambda/4)
 	sha3.ShakeSum256(cTildePrime, inputHash)
 
-	zMax := 0
+	zMax := int32(0)
 	for _, row := range z {
 		for _, value := range row {
 			if zMax < value {

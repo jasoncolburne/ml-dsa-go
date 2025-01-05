@@ -6,15 +6,15 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func expandA(parameters ParameterSet, rho []byte) [][][]int {
-	A := make([][][]int, parameters.K)
+func expandA(parameters ParameterSet, rho []byte) [][][]int32 {
+	A := make([][][]int32, parameters.K)
 
 	rhoLength := len(rho)
 	rhoPrime := make([]byte, rhoLength+2)
 	copy(rhoPrime, rho)
 
 	for r := range parameters.K {
-		A[r] = make([][]int, parameters.L)
+		A[r] = make([][]int32, parameters.L)
 
 		for s := range parameters.L {
 			rhoPrime[rhoLength] = integerToBytes(s, 1)[0]
@@ -27,13 +27,13 @@ func expandA(parameters ParameterSet, rho []byte) [][][]int {
 	return A
 }
 
-func expandS(parameters ParameterSet, rho []byte) ([][]int, [][]int) {
+func expandS(parameters ParameterSet, rho []byte) ([][]int32, [][]int32) {
 	rhoLength := len(rho)
 	rhoPrime := make([]byte, rhoLength+2)
 	copy(rhoPrime, rho)
 
-	s1 := make([][]int, parameters.L)
-	s2 := make([][]int, parameters.K)
+	s1 := make([][]int32, parameters.L)
+	s2 := make([][]int32, parameters.K)
 
 	for r := range parameters.L {
 		copy(rhoPrime[rhoLength:], integerToBytes(r, 2))
@@ -48,13 +48,13 @@ func expandS(parameters ParameterSet, rho []byte) ([][]int, [][]int) {
 	return s1, s2
 }
 
-func expandMask(parameters ParameterSet, rho []byte, mu int) [][]int {
+func expandMask(parameters ParameterSet, rho []byte, mu int32) [][]int32 {
 	c := 1 + bits.Len(uint(parameters.Gamma1-1))
 
 	rhoPrime := make([]byte, 66)
 	copy(rhoPrime[:64], rho)
 
-	y := make([][]int, parameters.L)
+	y := make([][]int32, parameters.L)
 	for r := range parameters.L {
 		copy(rhoPrime[64:], integerToBytes(mu+r, 2))
 
