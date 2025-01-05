@@ -9,7 +9,7 @@ However, I did my best to implement as instructed.
 Future improvements:
 - [ ] Stop using Sha256 to provide entropy, use Sha3-256 or Blake3 or something approved and better
 - [ ] Use hardware for NTT math
-  - [ ] NEON (arm) update: partial implementation sees negative performance gain, but maybe I'm just doing it wrong
+  - [ ] NEON (arm) update: partial implementation sees negative performance gain, but maybe I'm just doing it wrong. if you want to try building it, just build with `-tags=neon`.
   - [ ] AVX (x86)
 - [ ] Audit for side channel attacks
 - [ ] Zero sensitive data containers
