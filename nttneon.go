@@ -189,7 +189,5 @@ func matrixVectorNtt(parameters ParameterSet, MHat [][][]int32, vHat [][]int32) 
 		}
 	}
 
-	// fmt.Printf("wHat: %v\n", wHat)
-
 	return wHat
 }

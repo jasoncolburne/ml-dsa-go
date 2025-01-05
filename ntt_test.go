@@ -15,7 +15,6 @@ func TestNTTRoundTrip(t *testing.T) {
 
 	for i := range 256 {
 		if result[i] != input[i] {
-			// fmt.Printf("%v", result)
 			t.Fatalf("mismatch at %d: %d != %d", i, result[i], input[i])
 		}
 	}
