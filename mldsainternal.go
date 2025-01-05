@@ -7,7 +7,8 @@ import (
 )
 
 func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte, err error) {
-	input := rnd
+	input := make([]byte, len(rnd))
+	copy(input, rnd)
 	input = append(input, integerToBytes(parameters.K, 1)...)
 	input = append(input, integerToBytes(parameters.L, 1)...)
 
