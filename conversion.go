@@ -310,11 +310,8 @@ func hintBitPack(parameters ParameterSet, h [][]bool) []byte {
 	index := 0
 
 	for i := range parameters.K {
-		count := 0
-
 		for j := range 256 {
 			if h[i][j] {
-				count += 1
 				y[index] = byte(j)
 				index += 1
 			}
