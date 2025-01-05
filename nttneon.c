@@ -3,7 +3,7 @@
 #include <arm_neon.h>
 #include <stdint.h>
 
-inline int64x2_t vmulq_s64_apple(const int64x2_t a, const int64x2_t b) {
+inline int64x2_t vmulq_s64(const int64x2_t a, const int64x2_t b) {
    const int32x2_t ac = vmovn_s64(a);
    const int32x2_t pr = vmovn_s64(b);
 
@@ -44,11 +44,7 @@ void multiply_ntt(const int64_t *aHat, const int64_t *bHat, int64_t *cHat, int32
     for (int i = 0; i < 256; i += 2) {
         int64x2_t a_vec = vld1q_s64(&aHat[i]);
         int64x2_t b_vec = vld1q_s64(&bHat[i]);
-#ifdef __APPLE__
-        int64x2_t prod_vec = vmodq_s64(vmulq_s64_apple(a_vec, b_vec), q);
-#else
         int64x2_t prod_vec = vmodq_s64(vmulq_s64(a_vec, b_vec), q);
-#endif
         vst1q_s64(&cHat[i], prod_vec);
     }
 }
