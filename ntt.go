@@ -1,5 +1,3 @@
-//go:build !neon
-
 package mldsa
 
 func ntt(parameters ParameterSet, w []int32) []int32 {
@@ -60,36 +58,6 @@ func nttInverse(parameters ParameterSet, wHat []int32) []int32 {
 	}
 
 	return w
-}
-
-func addNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
-	cHat := make([]int32, 256)
-
-	for i := range 256 {
-		cHat[i] = modQ(aHat[i]+bHat[i], parameters.Q)
-	}
-
-	return cHat
-}
-
-func subtractNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
-	cHat := make([]int32, 256)
-
-	for i := range 256 {
-		cHat[i] = modQ(aHat[i]-bHat[i], parameters.Q)
-	}
-
-	return cHat
-}
-
-func multiplyNtt(parameters ParameterSet, aHat, bHat []int32) []int32 {
-	cHat := make([]int32, 256)
-
-	for i := range 256 {
-		cHat[i] = modMultiply(aHat[i], bHat[i], parameters.Q)
-	}
-
-	return cHat
 }
 
 func vectorNtt(parameters ParameterSet, v [][]int32) [][]int32 {
