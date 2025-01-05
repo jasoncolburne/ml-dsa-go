@@ -4,7 +4,7 @@ func modMultiply(a, b, q int32) int32 {
 	return int32((int64(a) * int64(b)) % int64(q))
 }
 
-func modCentered(n, q int32) int32 {
+func modQSymmetric(n, q int32) int32 {
 	result := modQ(n, q)
 
 	if result > q/2 {
@@ -21,14 +21,14 @@ func modQ(n, q int32) int32 {
 func power2Round(parameters ParameterSet, r int32) (int32, int32) {
 	rPlus := modQ(r, parameters.Q)
 	bound := int32(1) << parameters.D
-	r0 := modCentered(rPlus, bound)
+	r0 := modQSymmetric(rPlus, bound)
 
 	return (rPlus - r0) / bound, r0
 }
 
 func decompose(parameters ParameterSet, r int32) (int32, int32) {
 	rPlus := modQ(r, parameters.Q)
-	r0 := modCentered(rPlus, 2*parameters.Gamma2)
+	r0 := modQSymmetric(rPlus, 2*parameters.Gamma2)
 	r1 := int32(0)
 
 	if rPlus-r0 == parameters.Q-1 {

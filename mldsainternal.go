@@ -109,7 +109,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		cs2 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, s2Hat))
 		for i, row := range cs1 {
 			for j, value := range row {
-				cs1[i][j] = modCentered(value, parameters.Q)
+				cs1[i][j] = modQSymmetric(value, parameters.Q)
 			}
 		}
 
@@ -194,7 +194,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		zModQCentered[i] = make([]int32, len(row))
 
 		for j, value := range row {
-			zModQCentered[i][j] = modCentered(value, parameters.Q)
+			zModQCentered[i][j] = modQSymmetric(value, parameters.Q)
 		}
 	}
 

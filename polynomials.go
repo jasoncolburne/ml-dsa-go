@@ -91,7 +91,7 @@ func addPolynomials(parameters ParameterSet, a, b []int32) []int32 {
 	result := make([]int32, 256)
 
 	for i := range 256 {
-		result[i] = modCentered(a[i]+b[i], parameters.Q)
+		result[i] = modQSymmetric(a[i]+b[i], parameters.Q)
 	}
 
 	return result
@@ -101,7 +101,7 @@ func subtractPolynomials(parameters ParameterSet, a, b []int32) []int32 {
 	result := make([]int32, 256)
 
 	for i := range 256 {
-		result[i] = modCentered(a[i]-b[i], parameters.Q)
+		result[i] = modQSymmetric(a[i]-b[i], parameters.Q)
 	}
 
 	return result
@@ -137,7 +137,7 @@ func scalarVectorMultiply(parameters ParameterSet, c int32, v [][]int32) [][]int
 	for i, row := range v {
 		w[i] = make([]int32, len(row))
 		for j, value := range row {
-			w[i][j] = modCentered(value*c, parameters.Q)
+			w[i][j] = modQSymmetric(value*c, parameters.Q)
 		}
 	}
 
