@@ -28,7 +28,7 @@ jobs:
         run: go test ./...
 
   test-neon:
-    runs-on: ubuntu-latest-arm64
+    runs-on: macos-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
