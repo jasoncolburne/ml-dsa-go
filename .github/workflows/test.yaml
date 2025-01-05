@@ -27,7 +27,7 @@ jobs:
       - name: Run tests
         run: go test ./...
 
-test-neon:
+  test-neon:
     runs-on: ubuntu-latest-arm64
     steps:
       - name: Checkout code
