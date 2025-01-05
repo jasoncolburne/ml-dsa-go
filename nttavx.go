@@ -56,7 +56,7 @@ func nttInverse(parameters ParameterSet, wHat []int32) []int32 {
 	// modMultiply(f, 256, q) == 1
 
 	for j := range 256 {
-		w[j] = modCentered(modMultiply(f, w[j], q), q)
+		w[j] = modQSymmetric(modMultiply(f, w[j], q), q)
 	}
 
 	return w
