@@ -1,4 +1,4 @@
-//go:build !neon && !avx
+//go:build !neon
 
 package mldsa
 
