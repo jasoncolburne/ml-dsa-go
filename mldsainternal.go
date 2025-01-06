@@ -85,11 +85,6 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 
 		cs1 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, s1Hat))
 		cs2 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, s2Hat))
-		for i, row := range cs1 {
-			for j, value := range row {
-				cs1[i][j] = modQSymmetric(value, parameters.Q)
-			}
-		}
 
 		z = vectorAddPolynomials(parameters, y, cs1)
 		r := vectorSubtractPolynomials(parameters, w, cs2)
