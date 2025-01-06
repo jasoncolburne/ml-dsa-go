@@ -358,3 +358,80 @@ func hintBitUnpack(parameters ParameterSet, y []byte) [][]bool {
 
 	return h
 }
+
+func vectorMaxAbsCoefficient(parameters ParameterSet, v [][]int32, lowBitsOnly bool) int32 {
+	max := int32(0)
+	for _, row := range v {
+		for _, value := range row {
+			var x int32
+			if lowBitsOnly {
+				x = lowBits(parameters, value)
+			} else {
+				x = value
+			}
+
+			if x < 0 {
+				x *= -1
+			}
+
+			if max < x {
+				max = x
+			}
+		}
+	}
+
+	return max
+}
+
+func onesInH(h [][]bool) int32 {
+	count := int32(0)
+
+	for _, row := range h {
+		for _, value := range row {
+			if value {
+				count += 1
+			}
+		}
+	}
+
+	return count
+}
+
+func vectorMakeHint(parameters ParameterSet, ct0Neg [][]int32, wPrime [][]int32) [][]bool {
+	h := make([][]bool, len(ct0Neg))
+
+	for i, ct0NegValues := range ct0Neg {
+		h[i] = make([]bool, len(ct0NegValues))
+		for j, value := range ct0NegValues {
+			h[i][j] = makeHint(parameters, value, wPrime[i][j])
+		}
+	}
+
+	return h
+}
+
+func vectorHighBits(parameters ParameterSet, v [][]int32) [][]int32 {
+	w1 := make([][]int32, parameters.K)
+
+	for j, row := range v {
+		w1[j] = make([]int32, 256)
+		for i, value := range row {
+			w1[j][i] = highBits(parameters, value)
+		}
+	}
+
+	return w1
+}
+
+func vectorUseHint(parameters ParameterSet, v [][]int32, h [][]bool) [][]int32 {
+	w1Prime := make([][]int32, parameters.K)
+
+	for i, row := range v {
+		w1Prime[i] = make([]int32, len(row))
+		for j, value := range row {
+			w1Prime[i][j] = useHint(parameters, h[i][j], value)
+		}
+	}
+
+	return w1Prime
+}

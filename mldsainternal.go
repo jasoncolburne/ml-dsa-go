@@ -24,21 +24,8 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 	s1Hat := vectorNtt(parameters, s1)
 
 	product := matrixVectorNtt(parameters, AHat, s1Hat)
-
-	t := make([][]int32, parameters.K)
-	for j := range parameters.K {
-		t[j] = addPolynomials(parameters, nttInverse(parameters, product[j]), s2[j])
-	}
-
-	t0 := make([][]int32, parameters.K)
-	t1 := make([][]int32, parameters.K)
-	for j := range parameters.K {
-		t0[j] = make([]int32, 256)
-		t1[j] = make([]int32, 256)
-		for i := range 256 {
-			t1[j][i], t0[j][i] = power2Round(parameters, t[j][i])
-		}
-	}
+	t := vectorAddPolynomials(parameters, vectorNttInverse(parameters, product), s2)
+	t1, t0 := vectorPower2Round(parameters, t)
 
 	pk := pkEncode(parameters, rho, t1)
 
@@ -83,18 +70,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		yHat := vectorNtt(parameters, y)
 		product := matrixVectorNtt(parameters, AHat, yHat)
 
-		w := make([][]int32, parameters.K)
-		for j, polynomial := range product {
-			w[j] = nttInverse(parameters, polynomial)
-		}
-
-		w1 := make([][]int32, parameters.K)
-		for j, row := range w {
-			w1[j] = make([]int32, 256)
-			for i, value := range row {
-				w1[j][i] = highBits(parameters, value)
-			}
-		}
+		w := vectorNttInverse(parameters, product)
+		w1 := vectorHighBits(parameters, w)
 
 		inputHash = make([]byte, 64)
 		copy(inputHash, mu)
@@ -117,77 +94,21 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		z = vectorAddPolynomials(parameters, y, cs1)
 		r := vectorSubtractPolynomials(parameters, w, cs2)
 
-		r0Max := int32(0)
-		for _, polynomial := range r {
-			for _, value := range polynomial {
-				r0 := int32(lowBits(parameters, value))
-				if r0 < 0 {
-					r0 *= -1
-				}
-
-				if r0Max < r0 {
-					r0Max = r0
-				}
-			}
-		}
-
-		zMax := int32(0)
-		for _, polynomial := range z {
-			for _, value := range polynomial {
-				zValue := value
-
-				if zValue < 0 {
-					zValue *= -1
-				}
-
-				if zMax < zValue {
-					zMax = zValue
-				}
-			}
-		}
+		zMax := vectorMaxAbsCoefficient(parameters, z, false)
+		r0Max := vectorMaxAbsCoefficient(parameters, r, true)
 
 		if zMax >= parameters.Gamma1-parameters.Beta || r0Max >= parameters.Gamma2-parameters.Beta {
 			z = nil
 			h = nil
 		} else {
 			ct0 := vectorNttInverse(parameters, scalarVectorNtt(parameters, cHat, t0Hat))
+
 			ct0Neg := scalarVectorMultiply(parameters, -1, ct0)
-
 			wPrime := vectorAddPolynomials(parameters, vectorSubtractPolynomials(parameters, w, cs2), ct0)
-			h = make([][]bool, len(ct0Neg))
 
-			for i, ct0NegValues := range ct0Neg {
-				h[i] = make([]bool, len(ct0NegValues))
-				for j, value := range ct0NegValues {
-					h[i][j] = makeHint(parameters, value, wPrime[i][j])
-				}
-			}
-
-			ct0Max := int32(0)
-			for _, row := range ct0 {
-				for _, value := range row {
-					ct0 := value
-
-					if ct0 < 0 {
-						ct0 *= -1
-					}
-
-					if ct0Max < ct0 {
-						ct0Max = ct0
-					}
-				}
-			}
-
-			onesInH := int32(0)
-			for _, row := range h {
-				for _, value := range row {
-					if value {
-						onesInH += 1
-					}
-				}
-			}
-
-			if ct0Max >= parameters.Gamma2 || onesInH > parameters.Omega {
+			h = vectorMakeHint(parameters, ct0Neg, wPrime)
+			ct0Max := vectorMaxAbsCoefficient(parameters, ct0, false)
+			if ct0Max >= parameters.Gamma2 || onesInH(h) > parameters.Omega {
 				z = nil
 				h = nil
 			}
@@ -196,16 +117,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		k += parameters.L
 	}
 
-	zModQCentered := make([][]int32, len(z))
-	for i, row := range z {
-		zModQCentered[i] = make([]int32, len(row))
-
-		for j, value := range row {
-			zModQCentered[i][j] = modQSymmetric(value, parameters.Q)
-		}
-	}
-
-	sigma := sigEncode(parameters, cTilde, zModQCentered, h)
+	zModQSymmetric := vectorModQSymmetric(z, parameters.Q)
+	sigma := sigEncode(parameters, cTilde, zModQSymmetric, h)
 	return sigma
 }
 
@@ -235,18 +148,8 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	Az := matrixVectorNtt(parameters, AHat, vectorNtt(parameters, z))
 	Azct := subtractVectorNtt(parameters, Az, ct)
 
-	wApproxPrime := make([][]int32, parameters.K)
-	for i, value := range Azct {
-		wApproxPrime[i] = nttInverse(parameters, value)
-	}
-
-	w1Prime := make([][]int32, parameters.K)
-	for i, row := range wApproxPrime {
-		w1Prime[i] = make([]int32, len(row))
-		for j, value := range row {
-			w1Prime[i][j] = useHint(parameters, h[i][j], value)
-		}
-	}
+	wApproxPrime := vectorNttInverse(parameters, Azct)
+	w1Prime := vectorUseHint(parameters, wApproxPrime, h)
 
 	inputHash = make([]byte, 64)
 	copy(inputHash, mu)
@@ -255,20 +158,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	cTildePrime := make([]byte, parameters.Lambda/4)
 	sha3.ShakeSum256(cTildePrime, inputHash)
 
-	zMax := int32(0)
-	for _, row := range z {
-		for _, value := range row {
-			zValue := value
-
-			if zValue < 0 {
-				zValue *= -1
-			}
-
-			if zMax < zValue {
-				zMax = zValue
-			}
-		}
-	}
-
+	zMax := vectorMaxAbsCoefficient(parameters, z, false)
 	return zMax < (parameters.Gamma1-parameters.Beta) && subtle.ConstantTimeCompare(cTilde, cTildePrime) == 1
 }

@@ -4,6 +4,10 @@ func modMultiply(a, b, q int32) int32 {
 	return int32((int64(a) * int64(b)) % int64(q))
 }
 
+func modQ(n, q int32) int32 {
+	return (n%q + q) % q
+}
+
 func modQSymmetric(n, q int32) int32 {
 	result := modQ(n, q)
 
@@ -14,8 +18,32 @@ func modQSymmetric(n, q int32) int32 {
 	return result
 }
 
-func modQ(n, q int32) int32 {
-	return (n%q + q) % q
+func vectorModQSymmetric(z [][]int32, q int32) [][]int32 {
+	zModQSymmetric := make([][]int32, len(z))
+
+	for i, row := range z {
+		zModQSymmetric[i] = make([]int32, len(row))
+		for j, value := range row {
+			zModQSymmetric[i][j] = modQSymmetric(value, q)
+		}
+	}
+
+	return zModQSymmetric
+}
+
+func vectorPower2Round(parameters ParameterSet, t [][]int32) ([][]int32, [][]int32) {
+	t0 := make([][]int32, parameters.K)
+	t1 := make([][]int32, parameters.K)
+
+	for j := range parameters.K {
+		t0[j] = make([]int32, 256)
+		t1[j] = make([]int32, 256)
+		for i := range 256 {
+			t1[j][i], t0[j][i] = power2Round(parameters, t[j][i])
+		}
+	}
+
+	return t1, t0
 }
 
 func power2Round(parameters ParameterSet, r int32) (int32, int32) {
