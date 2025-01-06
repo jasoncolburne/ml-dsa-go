@@ -358,27 +358,3 @@ func hintBitUnpack(parameters ParameterSet, y []byte) [][]bool {
 
 	return h
 }
-
-func vectorMaxAbsCoefficient(parameters ParameterSet, v [][]int32, lowBitsOnly bool) int32 {
-	max := int32(0)
-	for _, row := range v {
-		for _, value := range row {
-			var x int32
-			if lowBitsOnly {
-				x = lowBits(parameters, value)
-			} else {
-				x = value
-			}
-
-			if x < 0 {
-				x *= -1
-			}
-
-			if max < x {
-				max = x
-			}
-		}
-	}
-
-	return max
-}
