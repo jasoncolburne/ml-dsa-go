@@ -117,34 +117,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		z = vectorAddPolynomials(parameters, y, cs1)
 		r := vectorSubtractPolynomials(parameters, w, cs2)
 
-		r0Max := int32(0)
-		for _, polynomial := range r {
-			for _, value := range polynomial {
-				r0 := int32(lowBits(parameters, value))
-				if r0 < 0 {
-					r0 *= -1
-				}
-
-				if r0Max < r0 {
-					r0Max = r0
-				}
-			}
-		}
-
-		zMax := int32(0)
-		for _, polynomial := range z {
-			for _, value := range polynomial {
-				zValue := value
-
-				if zValue < 0 {
-					zValue *= -1
-				}
-
-				if zMax < zValue {
-					zMax = zValue
-				}
-			}
-		}
+		zMax := maxAbsVectorCoefficient(parameters, z, false)
+		r0Max := maxAbsVectorCoefficient(parameters, r, true)
 
 		if zMax >= parameters.Gamma1-parameters.Beta || r0Max >= parameters.Gamma2-parameters.Beta {
 			z = nil
@@ -163,31 +137,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 				}
 			}
 
-			ct0Max := int32(0)
-			for _, row := range ct0 {
-				for _, value := range row {
-					ct0 := value
-
-					if ct0 < 0 {
-						ct0 *= -1
-					}
-
-					if ct0Max < ct0 {
-						ct0Max = ct0
-					}
-				}
-			}
-
-			onesInH := int32(0)
-			for _, row := range h {
-				for _, value := range row {
-					if value {
-						onesInH += 1
-					}
-				}
-			}
-
-			if ct0Max >= parameters.Gamma2 || onesInH > parameters.Omega {
+			ct0Max := maxAbsVectorCoefficient(parameters, ct0, false)
+			if ct0Max >= parameters.Gamma2 || onesInH(h) > parameters.Omega {
 				z = nil
 				h = nil
 			}
@@ -196,16 +147,16 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		k += parameters.L
 	}
 
-	zModQCentered := make([][]int32, len(z))
+	zModQSymmetric := make([][]int32, len(z))
 	for i, row := range z {
-		zModQCentered[i] = make([]int32, len(row))
+		zModQSymmetric[i] = make([]int32, len(row))
 
 		for j, value := range row {
-			zModQCentered[i][j] = modQSymmetric(value, parameters.Q)
+			zModQSymmetric[i][j] = modQSymmetric(value, parameters.Q)
 		}
 	}
 
-	sigma := sigEncode(parameters, cTilde, zModQCentered, h)
+	sigma := sigEncode(parameters, cTilde, zModQSymmetric, h)
 	return sigma
 }
 
@@ -255,20 +206,6 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	cTildePrime := make([]byte, parameters.Lambda/4)
 	sha3.ShakeSum256(cTildePrime, inputHash)
 
-	zMax := int32(0)
-	for _, row := range z {
-		for _, value := range row {
-			zValue := value
-
-			if zValue < 0 {
-				zValue *= -1
-			}
-
-			if zMax < zValue {
-				zMax = zValue
-			}
-		}
-	}
-
+	zMax := maxAbsVectorCoefficient(parameters, z, false)
 	return zMax < (parameters.Gamma1-parameters.Beta) && subtle.ConstantTimeCompare(cTilde, cTildePrime) == 1
 }
