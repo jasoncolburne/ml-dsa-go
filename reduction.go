@@ -31,6 +31,14 @@ func vectorModQSymmetric(z [][]int32, q int32) [][]int32 {
 	return zModQSymmetric
 }
 
+func power2Round(parameters ParameterSet, r int32) (int32, int32) {
+	rPlus := modQ(r, parameters.Q)
+	bound := int32(1) << parameters.D
+	r0 := modQSymmetric(rPlus, bound)
+
+	return (rPlus - r0) / bound, r0
+}
+
 func vectorPower2Round(parameters ParameterSet, t [][]int32) ([][]int32, [][]int32) {
 	t0 := make([][]int32, parameters.K)
 	t1 := make([][]int32, parameters.K)
@@ -44,14 +52,6 @@ func vectorPower2Round(parameters ParameterSet, t [][]int32) ([][]int32, [][]int
 	}
 
 	return t1, t0
-}
-
-func power2Round(parameters ParameterSet, r int32) (int32, int32) {
-	rPlus := modQ(r, parameters.Q)
-	bound := int32(1) << parameters.D
-	r0 := modQSymmetric(rPlus, bound)
-
-	return (rPlus - r0) / bound, r0
 }
 
 func decompose(parameters ParameterSet, r int32) (int32, int32) {
