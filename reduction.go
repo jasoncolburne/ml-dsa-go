@@ -14,6 +14,33 @@ func modQSymmetric(n, q int32) int32 {
 	return result
 }
 
+func vectorModQSymmetric(z [][]int32, q int32) [][]int32 {
+	zModQSymmetric := make([][]int32, len(z))
+
+	for i, row := range z {
+		zModQSymmetric[i] = make([]int32, len(row))
+		for j, value := range row {
+			zModQSymmetric[i][j] = modQSymmetric(value, q)
+		}
+	}
+
+	return zModQSymmetric
+}
+
+func vectorPower2Round(parameters ParameterSet, t [][]int32) ([][]int32, [][]int32) {
+	t0 := make([][]int32, parameters.K)
+	t1 := make([][]int32, parameters.K)
+
+	for j := range parameters.K {
+		t0[j] = make([]int32, 256)
+		t1[j] = make([]int32, 256)
+		for i := range 256 {
+			t1[j][i], t0[j][i] = power2Round(parameters, t[j][i])
+		}
+	}
+
+	return t1, t0
+}
 func modQ(n, q int32) int32 {
 	return (n%q + q) % q
 }
