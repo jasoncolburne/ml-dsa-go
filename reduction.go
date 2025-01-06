@@ -73,6 +73,19 @@ func highBits(parameters ParameterSet, r int32) int32 {
 	return r1
 }
 
+func vectorHighBits(parameters ParameterSet, v [][]int32) [][]int32 {
+	w1 := make([][]int32, parameters.K)
+
+	for j, row := range v {
+		w1[j] = make([]int32, 256)
+		for i, value := range row {
+			w1[j][i] = highBits(parameters, value)
+		}
+	}
+
+	return w1
+}
+
 func lowBits(parameters ParameterSet, r int32) int32 {
 	_, r0 := decompose(parameters, r)
 	return r0
@@ -83,6 +96,19 @@ func makeHint(parameters ParameterSet, z, r int32) bool {
 	v1 := highBits(parameters, r+z)
 
 	return r1 != v1
+}
+
+func vectorMakeHint(parameters ParameterSet, ct0Neg [][]int32, wPrime [][]int32) [][]bool {
+	h := make([][]bool, len(ct0Neg))
+
+	for i, ct0NegValues := range ct0Neg {
+		h[i] = make([]bool, len(ct0NegValues))
+		for j, value := range ct0NegValues {
+			h[i][j] = makeHint(parameters, value, wPrime[i][j])
+		}
+	}
+
+	return h
 }
 
 func useHint(parameters ParameterSet, h bool, r int32) int32 {
@@ -98,4 +124,31 @@ func useHint(parameters ParameterSet, h bool, r int32) int32 {
 	}
 
 	return r1
+}
+
+func vectorUseHint(parameters ParameterSet, v [][]int32, h [][]bool) [][]int32 {
+	w1Prime := make([][]int32, parameters.K)
+
+	for i, row := range v {
+		w1Prime[i] = make([]int32, len(row))
+		for j, value := range row {
+			w1Prime[i][j] = useHint(parameters, h[i][j], value)
+		}
+	}
+
+	return w1Prime
+}
+
+func onesInH(h [][]bool) int32 {
+	count := int32(0)
+
+	for _, row := range h {
+		for _, value := range row {
+			if value {
+				count += 1
+			}
+		}
+	}
+
+	return count
 }
