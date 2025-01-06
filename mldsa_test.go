@@ -44,6 +44,16 @@ func testParamsRoundtrip(params mldsa.ParameterSet, t *testing.T, skLength, vkLe
 		t.Fatalf("signature not valid!")
 	}
 
+	vkPrime := copyAndMutate(vk)
+	valid, err = dsa.Verify(vkPrime, message, sig, ctx)
+	if err != nil {
+		t.Fatalf("error verifying: %v", err)
+	}
+
+	if valid {
+		t.Fatalf("mutated public key is still valid!")
+	}
+
 	sigPrime := copyAndMutate(sig)
 	valid, err = dsa.Verify(vk, message, sigPrime, ctx)
 	if err != nil {
