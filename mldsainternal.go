@@ -166,8 +166,14 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 			ct0Max := int32(0)
 			for _, row := range ct0 {
 				for _, value := range row {
-					if ct0Max < value {
-						ct0Max = value
+					ct0 := value
+
+					if ct0 < 0 {
+						ct0 *= -1
+					}
+
+					if ct0Max < ct0 {
+						ct0Max = ct0
 					}
 				}
 			}
@@ -252,8 +258,14 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	zMax := int32(0)
 	for _, row := range z {
 		for _, value := range row {
-			if zMax < value {
-				zMax = value
+			zValue := value
+
+			if zValue < 0 {
+				zValue *= -1
+			}
+
+			if zMax < zValue {
+				zMax = zValue
 			}
 		}
 	}
