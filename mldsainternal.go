@@ -5,8 +5,7 @@ import (
 )
 
 func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte, err error) {
-	inputHash := concatenateBytesAndSHAKE(
-		true,
+	inputHash := concatenateBytesAndSHAKE256(
 		128,
 		rnd,
 		integerToBytes(parameters.K, 1),
@@ -27,7 +26,7 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 
 	pk := pkEncode(parameters, rho, t1)
 
-	tr := concatenateBytesAndSHAKE(true, 64, pk)
+	tr := concatenateBytesAndSHAKE256(64, pk)
 	sk := skEncode(parameters, rho, kappa, tr, s1, s2, t0)
 
 	return pk, sk, nil
@@ -41,8 +40,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 	t0Hat := vectorNtt(parameters, t0)
 	AHat := expandA(parameters, rho)
 
-	mu := concatenateBytesAndSHAKE(true, 64, tr, mPrime)
-	rhoPrimePrime := concatenateBytesAndSHAKE(true, 64, kappa, rnd, mu)
+	mu := concatenateBytesAndSHAKE256(64, tr, mPrime)
+	rhoPrimePrime := concatenateBytesAndSHAKE256(64, kappa, rnd, mu)
 
 	k := int32(0)
 	var z [][]int32
@@ -58,7 +57,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		w := vectorNttInverse(parameters, product)
 		w1 := vectorHighBits(parameters, w)
 
-		cTilde = concatenateBytesAndSHAKE(true, parameters.Lambda/4, mu, w1Encode(parameters, w1))
+		cTilde = concatenateBytesAndSHAKE256(parameters.Lambda/4, mu, w1Encode(parameters, w1))
 		c := sampleInBall(parameters, cTilde)
 		cHat := ntt(parameters, c)
 
@@ -107,8 +106,8 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 
 	AHat := expandA(parameters, rho)
 
-	tr := concatenateBytesAndSHAKE(true, 64, pk)
-	mu := concatenateBytesAndSHAKE(true, 64, tr, mPrime)
+	tr := concatenateBytesAndSHAKE256(64, pk)
+	mu := concatenateBytesAndSHAKE256(64, tr, mPrime)
 
 	c := sampleInBall(parameters, cTilde)
 	cHat := ntt(parameters, c)
@@ -120,7 +119,7 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	wApproxPrime := vectorNttInverse(parameters, Azct)
 	w1Prime := vectorUseHint(parameters, wApproxPrime, h)
 
-	cTildePrime := concatenateBytesAndSHAKE(true, parameters.Lambda/4, mu, w1Encode(parameters, w1Prime))
+	cTildePrime := concatenateBytesAndSHAKE256(parameters.Lambda/4, mu, w1Encode(parameters, w1Prime))
 	zMax := vectorMaxAbsCoefficient(parameters, z, false)
 
 	return zMax < (parameters.Gamma1-parameters.Beta) && subtle.ConstantTimeCompare(cTilde, cTildePrime) == 1

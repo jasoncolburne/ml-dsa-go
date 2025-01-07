@@ -55,7 +55,7 @@ func expandMask(parameters ParameterSet, rho []byte, mu int32) [][]int32 {
 	y := make([][]int32, parameters.L)
 	for r := range parameters.L {
 		copy(rhoPrime[64:], integerToBytes(mu+r, 2))
-		v := concatenateBytesAndSHAKE(true, int32(32*c), rhoPrime)
+		v := concatenateBytesAndSHAKE256(int32(32*c), rhoPrime)
 		y[r] = bitUnpack(v, parameters.Gamma1-1, parameters.Gamma1)
 	}
 

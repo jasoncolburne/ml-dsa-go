@@ -381,7 +381,7 @@ func concatenateBytes(args ...[]byte) []byte {
 	return result
 }
 
-func concatenateBytesAndSHAKE(is256 bool, outputLength int32, args ...[]byte) []byte {
+func concatenateBytesAndSHAKE256(outputLength int32, args ...[]byte) []byte {
 	var input []byte
 	if len(args) == 1 {
 		input = args[0]
@@ -390,11 +390,7 @@ func concatenateBytesAndSHAKE(is256 bool, outputLength int32, args ...[]byte) []
 	}
 
 	result := make([]byte, outputLength)
-	if is256 {
-		sha3.ShakeSum256(result, input)
-	} else {
-		sha3.ShakeSum128(result, input)
-	}
+	sha3.ShakeSum256(result, input)
 
 	return result
 }
