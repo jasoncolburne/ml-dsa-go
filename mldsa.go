@@ -38,10 +38,12 @@ func (dsa *MLDSA) Sign(sk, message, ctx []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
-	mPrime = append(mPrime, ctx...)
-	mPrime = append(mPrime, message...)
+	mPrime := concatenateBytes(
+		integerToBytes(0, 1),
+		integerToBytes(int32(len(ctx)), 1),
+		ctx,
+		message,
+	)
 
 	sigma := sign(dsa.parameters, sk, mPrime, rnd)
 	return sigma, nil
@@ -55,10 +57,12 @@ func (dsa *MLDSA) SignDeterministically(sk, message, ctx []byte) ([]byte, error)
 
 	rnd := make([]byte, SEEDLENGTH)
 
-	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
-	mPrime = append(mPrime, ctx...)
-	mPrime = append(mPrime, message...)
+	mPrime := concatenateBytes(
+		integerToBytes(0, 1),
+		integerToBytes(int32(len(ctx)), 1),
+		ctx,
+		message,
+	)
 
 	sigma := sign(dsa.parameters, sk, mPrime, rnd)
 	return sigma, nil
@@ -69,10 +73,12 @@ func (dsa *MLDSA) Verify(pk, message, signature, ctx []byte) (bool, error) {
 		return false, fmt.Errorf("ctx length > 255")
 	}
 
-	mPrime := integerToBytes(0, 1)
-	mPrime = append(mPrime, integerToBytes(int32(len(ctx)), 1)...)
-	mPrime = append(mPrime, ctx...)
-	mPrime = append(mPrime, message...)
+	mPrime := concatenateBytes(
+		integerToBytes(0, 1),
+		integerToBytes(int32(len(ctx)), 1),
+		ctx,
+		message,
+	)
 
 	return verify(dsa.parameters, pk, mPrime, signature), nil
 }
