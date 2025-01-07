@@ -2,18 +2,16 @@ package mldsa
 
 import (
 	"crypto/subtle"
-
-	"golang.org/x/crypto/sha3"
 )
 
 func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte, err error) {
-	input := make([]byte, len(rnd))
-	copy(input, rnd)
-	input = append(input, integerToBytes(parameters.K, 1)...)
-	input = append(input, integerToBytes(parameters.L, 1)...)
-
-	inputHash := make([]byte, 128)
-	sha3.ShakeSum256(inputHash, input)
+	inputHash := concatenateBytesAndSHAKE(
+		true,
+		128,
+		rnd,
+		integerToBytes(parameters.K, 1),
+		integerToBytes(parameters.L, 1),
+	)
 
 	rho := inputHash[:32]
 	rhoPrime := inputHash[32:96]
@@ -21,16 +19,15 @@ func keyGen(parameters ParameterSet, rnd []byte) (public []byte, private []byte,
 
 	AHat := expandA(parameters, rho)
 	s1, s2 := expandS(parameters, rhoPrime)
-	s1Hat := vectorNtt(parameters, s1)
 
+	s1Hat := vectorNtt(parameters, s1)
 	product := matrixVectorNtt(parameters, AHat, s1Hat)
 	t := vectorAddPolynomials(parameters, vectorNttInverse(parameters, product), s2)
 	t1, t0 := vectorPower2Round(parameters, t)
 
 	pk := pkEncode(parameters, rho, t1)
 
-	tr := make([]byte, 64)
-	sha3.ShakeSum256(tr, pk)
+	tr := concatenateBytesAndSHAKE(true, 64, pk)
 	sk := skEncode(parameters, rho, kappa, tr, s1, s2, t0)
 
 	return pk, sk, nil
@@ -44,20 +41,8 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 	t0Hat := vectorNtt(parameters, t0)
 	AHat := expandA(parameters, rho)
 
-	inputHash := make([]byte, 64)
-	copy(inputHash, tr)
-	inputHash = append(inputHash, mPrime...)
-
-	mu := make([]byte, 64)
-	sha3.ShakeSum256(mu, inputHash)
-
-	inputHash = make([]byte, 128)
-	copy(inputHash[:32], kappa)
-	copy(inputHash[32:64], rnd)
-	copy(inputHash[64:], mu)
-
-	rhoPrimePrime := make([]byte, 64)
-	sha3.ShakeSum256(rhoPrimePrime, inputHash)
+	mu := concatenateBytesAndSHAKE(true, 64, tr, mPrime)
+	rhoPrimePrime := concatenateBytesAndSHAKE(true, 64, kappa, rnd, mu)
 
 	k := int32(0)
 	var z [][]int32
@@ -73,13 +58,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 		w := vectorNttInverse(parameters, product)
 		w1 := vectorHighBits(parameters, w)
 
-		inputHash = make([]byte, 64)
-		copy(inputHash, mu)
-		inputHash = append(inputHash, w1Encode(parameters, w1)...)
-
-		cTilde = make([]byte, parameters.Lambda/4)
-		sha3.ShakeSum256(cTilde, inputHash)
-
+		cTilde = concatenateBytesAndSHAKE(true, parameters.Lambda/4, mu, w1Encode(parameters, w1))
 		c := sampleInBall(parameters, cTilde)
 		cHat := ntt(parameters, c)
 
@@ -114,6 +93,7 @@ func sign(parameters ParameterSet, sk, mPrime, rnd []byte) []byte {
 
 	zModQSymmetric := vectorModQSymmetric(z, parameters.Q)
 	sigma := sigEncode(parameters, cTilde, zModQSymmetric, h)
+
 	return sigma
 }
 
@@ -126,15 +106,9 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	}
 
 	AHat := expandA(parameters, rho)
-	tr := make([]byte, 64)
-	sha3.ShakeSum256(tr, pk)
 
-	inputHash := make([]byte, 64)
-	copy(inputHash, tr)
-	inputHash = append(inputHash, mPrime...)
-
-	mu := make([]byte, 64)
-	sha3.ShakeSum256(mu, inputHash)
+	tr := concatenateBytesAndSHAKE(true, 64, pk)
+	mu := concatenateBytesAndSHAKE(true, 64, tr, mPrime)
 
 	c := sampleInBall(parameters, cTilde)
 	cHat := ntt(parameters, c)
@@ -146,13 +120,8 @@ func verify(parameters ParameterSet, pk, mPrime, sigma []byte) bool {
 	wApproxPrime := vectorNttInverse(parameters, Azct)
 	w1Prime := vectorUseHint(parameters, wApproxPrime, h)
 
-	inputHash = make([]byte, 64)
-	copy(inputHash, mu)
-	inputHash = append(inputHash, w1Encode(parameters, w1Prime)...)
-
-	cTildePrime := make([]byte, parameters.Lambda/4)
-	sha3.ShakeSum256(cTildePrime, inputHash)
-
+	cTildePrime := concatenateBytesAndSHAKE(true, parameters.Lambda/4, mu, w1Encode(parameters, w1Prime))
 	zMax := vectorMaxAbsCoefficient(parameters, z, false)
+
 	return zMax < (parameters.Gamma1-parameters.Beta) && subtle.ConstantTimeCompare(cTilde, cTildePrime) == 1
 }

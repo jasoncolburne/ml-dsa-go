@@ -2,6 +2,8 @@ package mldsa
 
 import (
 	"math/bits"
+
+	"golang.org/x/crypto/sha3"
 )
 
 func coeffFromHalfByte(parameters ParameterSet, b int32) *int32 {
@@ -357,4 +359,42 @@ func hintBitUnpack(parameters ParameterSet, y []byte) [][]bool {
 	}
 
 	return h
+}
+
+func concatenateBytes(args ...[]byte) []byte {
+	totalLength := 0
+
+	for _, arg := range args {
+		totalLength += len(arg)
+	}
+
+	result := make([]byte, totalLength)
+	offset := 0
+
+	for _, arg := range args {
+		length := len(arg)
+		limit := offset + length
+		copy(result[offset:limit], arg)
+		offset += length
+	}
+
+	return result
+}
+
+func concatenateBytesAndSHAKE(is256 bool, outputLength int32, args ...[]byte) []byte {
+	var input []byte
+	if len(args) == 1 {
+		input = args[0]
+	} else {
+		input = concatenateBytes(args...)
+	}
+
+	result := make([]byte, outputLength)
+	if is256 {
+		sha3.ShakeSum256(result, input)
+	} else {
+		sha3.ShakeSum128(result, input)
+	}
+
+	return result
 }

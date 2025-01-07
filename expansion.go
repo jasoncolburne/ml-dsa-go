@@ -2,8 +2,6 @@ package mldsa
 
 import (
 	"math/bits"
-
-	"golang.org/x/crypto/sha3"
 )
 
 func expandA(parameters ParameterSet, rho []byte) [][][]int32 {
@@ -57,10 +55,7 @@ func expandMask(parameters ParameterSet, rho []byte, mu int32) [][]int32 {
 	y := make([][]int32, parameters.L)
 	for r := range parameters.L {
 		copy(rhoPrime[64:], integerToBytes(mu+r, 2))
-
-		v := make([]byte, 32*c)
-		sha3.ShakeSum256(v, rhoPrime)
-
+		v := concatenateBytesAndSHAKE(true, int32(32*c), rhoPrime)
 		y[r] = bitUnpack(v, parameters.Gamma1-1, parameters.Gamma1)
 	}
 
