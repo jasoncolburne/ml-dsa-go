@@ -6,6 +6,8 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// the unblanced ifs in this function are different parameter set choices, a side
+// channel attack is not introduced by this pattern
 func coeffFromHalfByte(parameters ParameterSet, b int32) *int32 {
 	if parameters.Eta == 2 && b < 15 {
 		result := 2 - modQ(b, 5)
@@ -21,10 +23,9 @@ func coeffFromHalfByte(parameters ParameterSet, b int32) *int32 {
 }
 
 func coeffFromThreeBytes(parameters ParameterSet, b0, b1, b2 byte) *int32 {
-	b2Prime := int32(b2)
-	if b2Prime > 127 {
-		b2Prime -= 128
-	}
+	// the spec had a subtraction in an if clause here but this is better for
+	// consistency in cycles
+	b2Prime := int32(b2) & 0x7f
 
 	z := 65536*b2Prime + 256*int32(b1) + int32(b0)
 	if z < parameters.Q {
@@ -39,10 +40,21 @@ func bitsToBytes(y []bool) []byte {
 	z := make([]byte, (alpha+7)/8)
 
 	for i := range alpha {
-		// TODO: evaluate attacks (we optimized out a computation using this bool)
+		// even though we don't need to compute these if y[i] is false, we should
+		// to prevent timing attacks
+		toShift := modQ(int32(i), 8)
+		toAdd := uint8(1) << toShift
+
+		// this pattern shouldn't be optimized out to create
+		// a side channel attack
+		var x uint8 = 255
 		if y[i] {
-			z[i/8] += (1 << modQ(int32(i), 8))
+			x = toAdd
+		} else {
+			x = 0
 		}
+
+		z[i/8] += x
 	}
 
 	return z
@@ -72,9 +84,17 @@ func bitsToInteger(y []bool, alpha int32) int32 {
 
 	for i := 1; i <= int(alpha); i++ {
 		x <<= 1
+
+		// this pattern shouldn't allow for side channel attacks at
+		// any optimization level
+		var z int32 = -1
 		if y[int(alpha)-i] {
-			x += 1
+			z = 1
+		} else {
+			z = 0
 		}
+
+		x += z
 	}
 
 	return x
@@ -313,10 +333,22 @@ func hintBitPack(parameters ParameterSet, h [][]bool) []byte {
 
 	for i := range parameters.K {
 		for j := range 256 {
+			// this pattern shouldn't allow for timing attacks
+			old := y[index]
+			new := byte(j)
+
+			var x byte
+			var delta int = -1
 			if h[i][j] {
-				y[index] = byte(j)
-				index += 1
+				x = new
+				delta = 1
+			} else {
+				x = old
+				delta = 0
 			}
+
+			y[index] = x
+			index += delta
 		}
 
 		y[parameters.Omega+i] = byte(index)

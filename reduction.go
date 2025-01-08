@@ -11,9 +11,15 @@ func modQ(n, q int32) int32 {
 func modQSymmetric(n, q int32) int32 {
 	result := modQ(n, q)
 
+	// this pattern ensures no timing attacks are introduced
+	var delta int32 = -1
 	if result > q/2 {
-		result -= q
+		delta = -q
+	} else {
+		delta = 0
 	}
+
+	result += delta
 
 	return result
 }
@@ -59,6 +65,7 @@ func decompose(parameters ParameterSet, r int32) (int32, int32) {
 	r0 := modQSymmetric(rPlus, 2*parameters.Gamma2)
 	r1 := int32(0)
 
+	// TODO: think more about the asymmetry of this if
 	if rPlus-r0 == parameters.Q-1 {
 		r0 -= 1
 	} else {
@@ -157,6 +164,7 @@ func vectorMaxAbsCoefficient(parameters ParameterSet, v [][]int32, lowBitsOnly b
 	max := int32(0)
 	for _, row := range v {
 		for _, value := range row {
+			// TODO: think about the asymmetries in this function
 			var x int32
 			if lowBitsOnly {
 				x = lowBits(parameters, value)

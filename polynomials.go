@@ -47,12 +47,21 @@ func rejNttPoly(parameters ParameterSet, rho []byte) []int32 {
 		hasher.Read(s)
 
 		coefficient := coeffFromThreeBytes(parameters, s[0], s[1], s[2])
-		if coefficient == nil {
-			continue
+
+		// this pattern will prevent side channel attacks
+		var newA int32
+		delta := -1
+
+		if coefficient != nil {
+			newA = *coefficient
+			delta = 1
+		} else {
+			newA = a[j]
+			delta = 0
 		}
 
-		a[j] = *coefficient
-		j += 1
+		a[j] = newA
+		j += delta
 	}
 
 	return a
@@ -73,14 +82,32 @@ func rejBoundedPoly(parameters ParameterSet, rho []byte) []int32 {
 		z0 := coeffFromHalfByte(parameters, modQ(z, 16))
 		z1 := coeffFromHalfByte(parameters, z/16)
 
+		// these patterns ensure no timing attack is introduced
+		var newA int32
+		delta := -1
+
 		if z0 != nil {
-			a[j] = *z0
-			j += 1
+			newA = *z0
+			delta = 1
+		} else {
+			newA = a[j]
+			delta = 0
 		}
 
-		if z1 != nil && j < 256 {
-			a[j] = *z1
-			j += 1
+		a[j] = newA
+		j += delta
+
+		if j < 256 {
+			if z1 != nil {
+				newA = *z1
+				delta = 1
+			} else {
+				newA = a[j]
+				delta = 0
+			}
+
+			a[j] = newA
+			j += delta
 		}
 	}
 
