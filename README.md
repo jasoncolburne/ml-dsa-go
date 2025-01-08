@@ -12,5 +12,5 @@ Future improvements:
   - [x] NEON (arm) update: partial implementation sees negative performance gain, but maybe I'm just doing it wrong. if you want to try building it, just build with `-tags=neon`. not planning on investing more time here.
   - [ ] AVX (x86)
 - [ ] Audit for side channel attacks
-  I've done a bit of this now, I added some else clauses and tried to make everything constant time but there are a couple TODOs remaining that require some thought
+  - I've done a bit of this now, I added some else clauses and tried to make everything constant time but there are a couple TODOs remaining that require some thought
 - [ ] Zero sensitive data containers
