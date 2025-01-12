@@ -78,5 +78,5 @@ jobs:
         run: go mod tidy
 
       - name: Run tests
-        run: gofmt -l .
+        run: gofmt -e -l .
 
