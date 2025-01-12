@@ -4,7 +4,8 @@ But, the implementation should be complete as per [NIST](https://nvlpubs.nist.go
 
 It's possible there are a few timing vulnerabilities, and I've only just learned these ML-DSA concepts.
 
-However, I did my best to implement as instructed.
+I may have done some silly things to try and prevent optimization without understanding the go
+compiler when I can likely use a flag or something.
 
 ## Makefile
 
