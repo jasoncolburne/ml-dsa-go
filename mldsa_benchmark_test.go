@@ -13,6 +13,10 @@ func benchmarkMLDSAGenerate(parameters mldsa.ParameterSet, b *testing.B) {
 	for range b.N {
 		dsa.KeyGen()
 	}
+	b.StopTimer()
+
+	opsPerSec := float64(b.N) / b.Elapsed().Seconds()
+	b.ReportMetric(opsPerSec, "ops/s")
 }
 
 func benchmarkMLDSASign(parameters mldsa.ParameterSet, b *testing.B) {
@@ -25,6 +29,10 @@ func benchmarkMLDSASign(parameters mldsa.ParameterSet, b *testing.B) {
 	for range b.N {
 		dsa.Sign(sk, message, ctx)
 	}
+	b.StopTimer()
+
+	opsPerSec := float64(b.N) / b.Elapsed().Seconds()
+	b.ReportMetric(opsPerSec, "ops/s")
 }
 
 func benchmarkMLDSAVerify(parameters mldsa.ParameterSet, b *testing.B) {
@@ -38,6 +46,10 @@ func benchmarkMLDSAVerify(parameters mldsa.ParameterSet, b *testing.B) {
 	for range b.N {
 		dsa.Verify(pk, message, sig, ctx)
 	}
+	b.StopTimer()
+
+	opsPerSec := float64(b.N) / b.Elapsed().Seconds()
+	b.ReportMetric(opsPerSec, "ops/s")
 }
 
 func BenchmarkMLDSA44Generate(b *testing.B) {
